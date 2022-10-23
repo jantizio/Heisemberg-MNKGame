@@ -5,6 +5,7 @@ SRC =  mnkgame
 CLASS = classes
 
 MAIN_CLASS = mnkgame.MNKGame
+TESTER_CLASS = mnkgame.MNKPlayerTester
 PLAYER_CLASS = mnkgame.NostroPlayer
 
 CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
@@ -17,12 +18,28 @@ else
 endif
 
 MNK = 3 3 3
+rep = 10
 
 build:
 	$(JC) -cp ".." -d $(CLASS) $(SRC)/*.java
 
 run:
-	$(CHANGE_DIR) && java -cp ".." $(MAIN_CLASS) $(MNK) mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer
+	$(CHANGE_DIR) && java -cp ".." $(MAIN_CLASS) $(MNK) mnkgame.NostroPlayer
+
+vshuman:
+	$(CHANGE_DIR) && java -cp ".." $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
+
+test1move:
+	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -r $(rep)
+
+test2move:
+	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -r $(rep)
+
+1movetestverbose:
+	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -v
+
+2movetestverbose:
+	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -v
 
 clean:
-	$(RM) "./$(CLASS)/$(SRC)"
+	$(RM) ".\$(CLASS)\"
