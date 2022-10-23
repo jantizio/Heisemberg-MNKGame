@@ -1,8 +1,6 @@
 package mnkgame;
 
-import java.beans.beancontext.BeanContext;
 import java.util.Random;
-import asdlab.libreria.Alberi.*;
 
 public class NostroPlayer implements MNKPlayer {
     private Random rand;
@@ -54,39 +52,41 @@ public class NostroPlayer implements MNKPlayer {
                 return move;
             }
             B.markCell(d.i, d.j);
-            int score = minimax(B, 0, false);
+            int score = minimax(B, 0, false, start);
             B.unmarkCell();
-            // System.out.println("score [" + d.i + ", " + d.j + "]: " + score);
-            // assumo che lo score non può mai essere MNKGameState.OPEN
             if (score > bestScore) {
                 bestScore = score;
                 move = d;
             }
         }
-        // System.out.println("\n");
 
+        B.markCell(move.i, move.j);
         return move;
     }
 
     public String playerName() {
-        return "LOOOOL"; // TODO: scegliere un nome
+        return "TicTacToe PRO"; // TODO: scegliere un nome
     }
 
-    private int minimax(MNKBoard b, int depth, boolean isMaximazing) {
+    private int minimax(MNKBoard b, int depth, boolean isMaximazing, long start) {
         // if we are in a terminal state, evaluate the score
         MNKGameState result = b.gameState();
         MNKCell FC[] = b.getFreeCells();
         int bestScore;
         if (result != MNKGameState.OPEN) {
-            // System.out.println("result: " + pesi[result.ordinal()]);
-            return pesi[result.ordinal()];
+            return pesi[result.ordinal()] * (1 + FC.length);
+            // TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
+            // verificare se sono uguali in primo luogo
         }
 
         if (isMaximazing) {
             bestScore = pesi[yourWin.ordinal()];
             for (MNKCell c : FC) {
+                if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+                    return bestScore;
+
                 B.markCell(c.i, c.j);
-                int score = minimax(B, depth + 1, false);
+                int score = minimax(B, depth + 1, false, start);
                 B.unmarkCell();
                 if (score > bestScore) // max
                     bestScore = score;
@@ -94,8 +94,10 @@ public class NostroPlayer implements MNKPlayer {
         } else {
             bestScore = pesi[myWin.ordinal()];
             for (MNKCell c : FC) {
+                if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+                    return bestScore;
                 B.markCell(c.i, c.j);
-                int score = minimax(B, depth + 1, true);
+                int score = minimax(B, depth + 1, true, start);
                 B.unmarkCell();
                 if (score < bestScore) // min
                     bestScore = score;
