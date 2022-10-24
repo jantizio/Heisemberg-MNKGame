@@ -33,7 +33,7 @@ public class NostroPlayer implements MNKPlayer {
         pesi[yourWin.ordinal()] = -1;
 
         MIN = -100000000;
-        MIN = 100000000;
+        MAX = 100000000;
 
         gameStateCounter = 0;
 
