@@ -10,6 +10,7 @@ public class NostroPlayer implements MNKPlayer {
     private int TIMEOUT;
 
     private int pesi[];
+    private int MIN, MAX;
 
     /**
      * Default empty constructor
@@ -30,6 +31,9 @@ public class NostroPlayer implements MNKPlayer {
         pesi[MNKGameState.DRAW.ordinal()] = 0;
         pesi[yourWin.ordinal()] = -1;
 
+        MIN = -100000000;
+        MIN = 100000000;
+
     }
 
     public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -43,7 +47,7 @@ public class NostroPlayer implements MNKPlayer {
         if (FC.length == 1)
             return FC[0];
 
-        int bestScore = pesi[yourWin.ordinal()];
+        int bestScore = MIN;
         MNKCell move = FC[rand.nextInt(FC.length)];
 
         for (MNKCell d : FC) {
@@ -80,7 +84,7 @@ public class NostroPlayer implements MNKPlayer {
         }
 
         if (isMaximazing) {
-            bestScore = pesi[yourWin.ordinal()];
+            bestScore = MIN;
             for (MNKCell c : FC) {
                 if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
                     return bestScore;
@@ -92,7 +96,7 @@ public class NostroPlayer implements MNKPlayer {
                     bestScore = score;
             }
         } else {
-            bestScore = pesi[myWin.ordinal()];
+            bestScore = MAX;
             for (MNKCell c : FC) {
                 if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
                     return bestScore;

@@ -15,6 +15,7 @@ ifeq ($(OS),Windows_NT)
 	RM = rmdir /s /q
 else
 	detected_OS := $(shell uname)
+	RM = rm -rf
 endif
 
 MNK = 3 3 3
@@ -23,23 +24,20 @@ rep = 10
 build:
 	$(JC) -cp ".." -d $(CLASS) $(SRC)/*.java
 
-run:
-	$(CHANGE_DIR) && java -cp ".." $(MAIN_CLASS) $(MNK) mnkgame.NostroPlayer
-
 vshuman:
-	$(CHANGE_DIR) && java -cp ".." $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
+	$(CHANGE_DIR) && $(JR) -cp ".." $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
 
 test1move:
-	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -r $(rep)
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -r $(rep)
 
 test2move:
-	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -r $(rep)
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -r $(rep)
 
 1movetestverbose:
-	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -v
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -v
 
 2movetestverbose:
-	$(CHANGE_DIR) && java -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -v
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -v
 
 clean:
-	$(RM) ".\$(CLASS)\"
+	$(RM) $(CLASS)\
