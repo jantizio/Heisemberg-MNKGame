@@ -36,3 +36,10 @@ MNKPlayerTester application:
 
 
 	java -cp ".." mnkgame.MNKPlayerTester 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer -v -t 1 -r 10
+	
+# Cosa fare
+- Saad: iterative deepening e evaluate
+- Pische: alphabetapruning e sort moves
+
+Entro **Martedì 2**
+
