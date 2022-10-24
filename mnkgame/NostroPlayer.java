@@ -11,6 +11,7 @@ public class NostroPlayer implements MNKPlayer {
 
     private int pesi[];
     private int MIN, MAX;
+    private int gameStateCounter;
 
     /**
      * Default empty constructor
@@ -34,6 +35,8 @@ public class NostroPlayer implements MNKPlayer {
         MIN = -100000000;
         MIN = 100000000;
 
+        gameStateCounter = 0;
+
     }
 
     public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -51,6 +54,7 @@ public class NostroPlayer implements MNKPlayer {
         MNKCell move = FC[rand.nextInt(FC.length)];
 
         for (MNKCell d : FC) {
+            gameStateCounter += 1;
             if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
                 B.markCell(move.i, move.j);
                 return move;
@@ -64,6 +68,7 @@ public class NostroPlayer implements MNKPlayer {
             }
         }
 
+        // System.out.println("Stati di gioco valutati: " + gameStateCounter);
         B.markCell(move.i, move.j);
         return move;
     }
@@ -73,6 +78,7 @@ public class NostroPlayer implements MNKPlayer {
     }
 
     private int minimax(MNKBoard b, int depth, boolean isMaximazing, long start) {
+        gameStateCounter += 1;
         // if we are in a terminal state, evaluate the score
         MNKGameState result = b.gameState();
         MNKCell FC[] = b.getFreeCells();
