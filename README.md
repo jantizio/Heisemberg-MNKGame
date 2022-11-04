@@ -44,7 +44,7 @@ MNKPlayerTester application:
 Entro **Martedì 2**
 
 # Configurazioni su cui fare i test
-![Configurazioni da testare]("https://github.com/jantizio/MNKGame/blob/main/game_configuration.png")
+![Configurazioni da testare](game_configuration.jpg)
 
 
 
