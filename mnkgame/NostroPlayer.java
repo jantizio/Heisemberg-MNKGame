@@ -10,8 +10,10 @@ public class NostroPlayer implements MNKPlayer {
     private int TIMEOUT;
 
     private int pesi[];
-    private int MIN, MAX;
-    private int gameStateCounter;
+    private MNKCell bestMove;
+    private long timerStart;
+
+    private int gameStateCounter, numMosse; // debug variables
 
     /**
      * Default empty constructor
@@ -32,15 +34,17 @@ public class NostroPlayer implements MNKPlayer {
         pesi[MNKGameState.DRAW.ordinal()] = 0;
         pesi[yourWin.ordinal()] = -1;
 
-        MIN = -100000000;
-        MAX = 100000000;
-
+        // debug variables
         gameStateCounter = 0;
+        numMosse = 0;
 
     }
 
     public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
-        long start = System.currentTimeMillis();
+        timerStart = System.currentTimeMillis();
+
+        gameStateCounter = 0;
+        numMosse += 1;
 
         if (MC.length > 0) {
             MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
@@ -50,34 +54,20 @@ public class NostroPlayer implements MNKPlayer {
         if (FC.length == 1)
             return FC[0];
 
-        int bestScore = MIN;
-        MNKCell move = FC[rand.nextInt(FC.length)];
+        bestMove = FC[rand.nextInt(FC.length)];
 
-        for (MNKCell d : FC) {
-            gameStateCounter += 1;
-            if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
-                B.markCell(move.i, move.j);
-                return move;
-            }
-            B.markCell(d.i, d.j);
-            int score = minimax(B, 0, false, start);
-            B.unmarkCell();
-            if (score > bestScore) {
-                bestScore = score;
-                move = d;
-            }
-        }
+        alphabeta(B, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 
-        // System.out.println("Stati di gioco valutati: " + gameStateCounter);
-        B.markCell(move.i, move.j);
-        return move;
+        // debugMessage(false);
+        B.markCell(bestMove.i, bestMove.j);
+        return bestMove;
     }
 
     public String playerName() {
         return "TicTacToe PRO"; // TODO: scegliere un nome
     }
 
-    private int minimax(MNKBoard b, int depth, boolean isMaximazing, long start) {
+    private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing) {
         gameStateCounter += 1;
         // if we are in a terminal state, evaluate the score
         MNKGameState result = b.gameState();
@@ -90,30 +80,55 @@ public class NostroPlayer implements MNKPlayer {
         }
 
         if (isMaximazing) {
-            bestScore = MIN;
+            bestScore = Integer.MIN_VALUE;
             for (MNKCell c : FC) {
-                if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+                if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0))
                     return bestScore;
 
                 B.markCell(c.i, c.j);
-                int score = minimax(B, depth + 1, false, start);
+                int score = alphabeta(B, depth + 1, alpha, beta, false);
                 B.unmarkCell();
-                if (score > bestScore) // max
+
+                if (score > bestScore) {
                     bestScore = score;
+                    if (depth == 0)
+                        bestMove = c;
+                }
+                // bestScore = Math.max(score, bestScore);
+                alpha = Math.max(alpha, bestScore);
+                if (alpha >= beta)
+                    break; // beta cutoff
+
             }
         } else {
-            bestScore = MAX;
+            bestScore = Integer.MAX_VALUE;
             for (MNKCell c : FC) {
-                if ((System.currentTimeMillis() - start) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+                if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0))
                     return bestScore;
+
                 B.markCell(c.i, c.j);
-                int score = minimax(B, depth + 1, true, start);
+                int score = alphabeta(B, depth + 1, alpha, beta, true);
                 B.unmarkCell();
-                if (score < bestScore) // min
+
+                if (score < bestScore) {
                     bestScore = score;
+                    if (depth == 0)
+                        bestMove = c;
+                }
+                // bestScore = Math.min(score, bestScore);
+                beta = Math.min(beta, bestScore);
+                if (beta <= alpha)
+                    break;
             }
         }
         return bestScore;
+    }
+
+    private void debugMessage(boolean timeout) {
+        if (timeout)
+            System.out.print("time ended, ");
+        System.out.println(
+                "(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateCounter);
     }
 
 }
