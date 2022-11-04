@@ -7,6 +7,7 @@ CLASS = classes
 MAIN_CLASS = mnkgame.MNKGame
 TESTER_CLASS = mnkgame.MNKPlayerTester
 PLAYER_CLASS = mnkgame.NostroPlayer
+OPPONENT_PLAYER = mnkgame.QuasiRandomPlayer
 
 CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
 
@@ -28,16 +29,16 @@ vshuman:
 	$(CHANGE_DIR) && $(JR) -cp ".." $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
 
 test1move:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -r $(rep)
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_PLAYER) -r $(rep)
 
 test2move:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -r $(rep)
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(OPPONENT_PLAYER) $(PLAYER_CLASS) -r $(rep)
 
-1movetestverbose:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) mnkgame.QuasiRandomPlayer -v
+test1moveV:
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_PLAYER) -v
 
-2movetestverbose:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) mnkgame.QuasiRandomPlayer $(PLAYER_CLASS) -v
+test2moveV:
+	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(OPPONENT_PLAYER) $(PLAYER_CLASS) -v
 
 clean:
 	$(RM) $(CLASS)\
