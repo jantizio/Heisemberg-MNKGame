@@ -12,6 +12,7 @@ public class NostroPlayer implements MNKPlayer {
     private int pesi[];
     private MNKCell bestMove;
     private long timerStart;
+    private int maxDepth;
 
     private int gameStateCounter, numMosse; // debug variables
 
@@ -22,6 +23,7 @@ public class NostroPlayer implements MNKPlayer {
     }
 
     public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
+        maxDepth = 1;
         // New random seed for each game
         rand = new Random(System.currentTimeMillis());
         B = new MNKBoard(M, N, K);
@@ -56,7 +58,7 @@ public class NostroPlayer implements MNKPlayer {
 
         bestMove = FC[rand.nextInt(FC.length)];
 
-        alphabeta(B, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+        iterativeDeepening(B, true, 6);
 
         // debugMessage(false);
         B.markCell(bestMove.i, bestMove.j);
@@ -73,10 +75,8 @@ public class NostroPlayer implements MNKPlayer {
         MNKGameState result = b.gameState();
         MNKCell FC[] = b.getFreeCells();
         int bestScore;
-        if (result != MNKGameState.OPEN) {
-            return pesi[result.ordinal()] * (1 + FC.length);
-            // TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
-            // verificare se sono uguali in primo luogo
+        if (result != MNKGameState.OPEN || depth >= maxDepth) {
+            return eval(b);
         }
 
         if (isMaximazing) {
@@ -122,6 +122,27 @@ public class NostroPlayer implements MNKPlayer {
             }
         }
         return bestScore;
+    }
+
+    private int iterativeDeepening(MNKBoard b, boolean isMaximazing, int depth) {
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
+        int eval = 0;
+        for (int i = 0; i < depth; i++){
+            eval = alphabeta(b, 0, alpha, beta, isMaximazing);
+            maxDepth += 1;
+        }
+        return eval;
+    }
+
+    private int eval(MNKBoard b){
+        MNKGameState result = b.gameState();
+        MNKCell FC[] = b.getFreeCells();
+        if(result != MNKGameState.OPEN)
+            return pesi[result.ordinal()] * (1 + FC.length);
+        else return 0;
+        // TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
+        // verificare se sono uguali in primo luogo
     }
 
     private void debugMessage(boolean timeout) {
