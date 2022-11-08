@@ -8,11 +8,14 @@ public class NostroPlayer implements MNKPlayer {
     private MNKGameState myWin;
     private MNKGameState yourWin;
     private int TIMEOUT;
+    private int M, N, K;
 
     private int pesi[];
     private MNKCell bestMove;
     private long timerStart;
     private int maxDepth;
+    private int myMovesToWin[];
+    private int yourMovesToWin[];
 
     private int gameStateCounter, numMosse; // debug variables
 
@@ -58,7 +61,7 @@ public class NostroPlayer implements MNKPlayer {
 
         bestMove = FC[rand.nextInt(FC.length)];
 
-        iterativeDeepening(B, true, 6);
+        iterativeDeepening(B, true, 0);
 
         // debugMessage(false);
         B.markCell(bestMove.i, bestMove.j);
@@ -138,12 +141,70 @@ public class NostroPlayer implements MNKPlayer {
     private int eval(MNKBoard b){
         MNKGameState result = b.gameState();
         MNKCell FC[] = b.getFreeCells();
+        int count = 0;
+        for (MNKCell cell : FC) {
+            if(isWinningCell(cell.i, cell.j, K - 1)){
+                count += 100;
+            }else count -= 50;
+        }
         if(result != MNKGameState.OPEN)
             return pesi[result.ordinal()] * (1 + FC.length);
-        else return 0;
+        else return count;
         // TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
         // verificare se sono uguali in primo luogo
     }
+
+    private boolean isWinningCell(int i, int j, int target) {
+		MNKCellState s = B.cellState(i, j);
+        int n;
+
+		// Useless pedantic check
+		if(s == MNKCellState.FREE) return false;
+
+        MNKCellState notS = s == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
+
+
+        int freeN = 0;
+        int emptyCheck = K - target;
+
+
+		// Horizontal check
+		n = 1;
+		for(int k = 1; j-k >= 0 && freeN<=emptyCheck; k++){ 
+            MNKCellState p = B.cellState(i, j-k);
+            if(p == MNKCellState.FREE) freeN+=1;
+            else if(p != s) break;   
+            n++;
+        } // backward check
+		for(int k = 1; j+k <  N && freeN<=emptyCheck; k++){
+            MNKCellState p = B.cellState(i, j-k);
+            if(p == MNKCellState.FREE) freeN+=1;
+            else if(p != s) break;   
+            n++;
+        } // forward check   
+		if(n >= target) return true;
+
+		// Vertical check
+		n = 1;
+		for(int k = 1; i-k >= 0 && B.cellState(i-k,j) == s; k++) n++; // backward check
+		for(int k = 1; i+k <  M && B.cellState(i+k,j) == s; k++) n++; // forward check
+		if(n >= target) return true;
+		
+
+		// Diagonal check
+		n = 1;
+		for(int k = 1; i-k >= 0 && j-k >= 0 && B.cellState(i-k,j-k) == s; k++) n++; // backward check
+		for(int k = 1; i+k <  M && j+k <  N && B.cellState(i+k,j+k) == s; k++) n++; // forward check
+		if(n >= target) return true;
+
+		// Anti-diagonal check
+		n = 1;
+		for(int k = 1; i-k >= 0 && j+k < N  && B.cellState(i-k,j+k) == s; k++) n++; // backward check
+		for(int k = 1; i+k <  M && j-k >= 0 && B.cellState(i+k,j-k) == s; k++) n++; // backward check
+		if(n >= target) return true;
+
+		return false;
+	}
 
     private void debugMessage(boolean timeout) {
         if (timeout)
