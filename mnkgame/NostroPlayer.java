@@ -7,6 +7,8 @@ public class NostroPlayer implements MNKPlayer {
     private MNKBoard B;
     private MNKGameState myWin;
     private MNKGameState yourWin;
+    private MNKCellState me;
+    private MNKCellState opponent;
     private int TIMEOUT;
     private int M, N, K;
 
@@ -16,6 +18,8 @@ public class NostroPlayer implements MNKPlayer {
     private int maxDepth;
     private int myMovesToWin[];
     private int yourMovesToWin[];
+
+    public static int[][] positionWeights;
 
     private int gameStateCounter, numMosse; // debug variables
 
@@ -32,7 +36,12 @@ public class NostroPlayer implements MNKPlayer {
         B = new MNKBoard(M, N, K);
         myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+        me = first ? MNKCellState.P1 : MNKCellState.P2;
+        opponent = first ? MNKCellState.P2 : MNKCellState.P1;
         TIMEOUT = timeout_in_secs;
+        this.M = M;
+        this.N = N;
+        this.K = K;
 
         pesi = new int[MNKGameState.WINP2.ordinal() + 1];
         pesi[myWin.ordinal()] = 1;
@@ -42,6 +51,8 @@ public class NostroPlayer implements MNKPlayer {
         // debug variables
         gameStateCounter = 0;
         numMosse = 0;
+
+        createPositionWeights();
 
     }
 
@@ -61,7 +72,13 @@ public class NostroPlayer implements MNKPlayer {
 
         bestMove = FC[rand.nextInt(FC.length)];
 
-        iterativeDeepening(B, true, 0);
+        // for (MNKCell c : FC) {
+        // B.markCell(c.i, c.j);
+        // System.out.println("[" + c.i + ", " + c.j + "]: " + eval(B));
+        // B.unmarkCell();
+        // }
+
+        iterativeDeepening(B, true, 9);
 
         // debugMessage(false);
         B.markCell(bestMove.i, bestMove.j);
@@ -79,7 +96,9 @@ public class NostroPlayer implements MNKPlayer {
         MNKCell FC[] = b.getFreeCells();
         int bestScore;
         if (result != MNKGameState.OPEN || depth >= maxDepth) {
-            return eval(b);
+            int ev = eval(b);
+            // System.out.println(ev + "\n");
+            return ev;
         }
 
         if (isMaximazing) {
@@ -131,80 +150,147 @@ public class NostroPlayer implements MNKPlayer {
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
         int eval = 0;
-        for (int i = 0; i < depth; i++){
+        for (int i = 0; i < depth; i++) {
             eval = alphabeta(b, 0, alpha, beta, isMaximazing);
             maxDepth += 1;
         }
         return eval;
     }
 
-    private int eval(MNKBoard b){
+    private int eval(MNKBoard b) {
         MNKGameState result = b.gameState();
         MNKCell FC[] = b.getFreeCells();
         int count = 0;
-        for (MNKCell cell : FC) {
-            if(isWinningCell(cell.i, cell.j, K - 1)){
-                count += 100;
-            }else count -= 50;
-        }
-        if(result != MNKGameState.OPEN)
+
+        if (result != MNKGameState.OPEN)
             return pesi[result.ordinal()] * (1 + FC.length);
-        else return count;
+
+        // for (MNKCell cell : FC) {
+        // if (isWinningCell(cell.i, cell.j, K - 1)) {
+        // count += 100;
+        // } else
+        // count -= 50;
+        // }
+        return 15 * (evalPositionWeights(b, true) - evalPositionWeights(b, false));
         // TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
         // verificare se sono uguali in primo luogo
     }
 
     private boolean isWinningCell(int i, int j, int target) {
-		MNKCellState s = B.cellState(i, j);
+        MNKCellState s = B.cellState(i, j);
         int n;
 
-		// Useless pedantic check
-		if(s == MNKCellState.FREE) return false;
+        // Useless pedantic check
+        if (s == MNKCellState.FREE)
+            return false;
 
         MNKCellState notS = s == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-
 
         int freeN = 0;
         int emptyCheck = K - target;
 
-
-		// Horizontal check
-		n = 1;
-		for(int k = 1; j-k >= 0 && freeN<=emptyCheck; k++){ 
-            MNKCellState p = B.cellState(i, j-k);
-            if(p == MNKCellState.FREE) freeN+=1;
-            else if(p != s) break;   
+        // Horizontal check
+        n = 1;
+        for (int k = 1; j - k >= 0 && freeN <= emptyCheck; k++) {
+            MNKCellState p = B.cellState(i, j - k);
+            if (p == MNKCellState.FREE)
+                freeN += 1;
+            else if (p != s)
+                break;
             n++;
         } // backward check
-		for(int k = 1; j+k <  N && freeN<=emptyCheck; k++){
-            MNKCellState p = B.cellState(i, j-k);
-            if(p == MNKCellState.FREE) freeN+=1;
-            else if(p != s) break;   
+        for (int k = 1; j + k < N && freeN <= emptyCheck; k++) {
+            MNKCellState p = B.cellState(i, j - k);
+            if (p == MNKCellState.FREE)
+                freeN += 1;
+            else if (p != s)
+                break;
             n++;
-        } // forward check   
-		if(n >= target) return true;
+        } // forward check
+        if (n >= target)
+            return true;
 
-		// Vertical check
-		n = 1;
-		for(int k = 1; i-k >= 0 && B.cellState(i-k,j) == s; k++) n++; // backward check
-		for(int k = 1; i+k <  M && B.cellState(i+k,j) == s; k++) n++; // forward check
-		if(n >= target) return true;
-		
+        // Vertical check
+        n = 1;
+        for (int k = 1; i - k >= 0 && B.cellState(i - k, j) == s; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && B.cellState(i + k, j) == s; k++)
+            n++; // forward check
+        if (n >= target)
+            return true;
 
-		// Diagonal check
-		n = 1;
-		for(int k = 1; i-k >= 0 && j-k >= 0 && B.cellState(i-k,j-k) == s; k++) n++; // backward check
-		for(int k = 1; i+k <  M && j+k <  N && B.cellState(i+k,j+k) == s; k++) n++; // forward check
-		if(n >= target) return true;
+        // Diagonal check
+        n = 1;
+        for (int k = 1; i - k >= 0 && j - k >= 0 && B.cellState(i - k, j - k) == s; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && j + k < N && B.cellState(i + k, j + k) == s; k++)
+            n++; // forward check
+        if (n >= target)
+            return true;
 
-		// Anti-diagonal check
-		n = 1;
-		for(int k = 1; i-k >= 0 && j+k < N  && B.cellState(i-k,j+k) == s; k++) n++; // backward check
-		for(int k = 1; i+k <  M && j-k >= 0 && B.cellState(i+k,j-k) == s; k++) n++; // backward check
-		if(n >= target) return true;
+        // Anti-diagonal check
+        n = 1;
+        for (int k = 1; i - k >= 0 && j + k < N && B.cellState(i - k, j + k) == s; k++)
+            n++; // backward check
+        for (int k = 1; i + k < M && j - k >= 0 && B.cellState(i + k, j - k) == s; k++)
+            n++; // backward check
+        if (n >= target)
+            return true;
 
-		return false;
-	}
+        return false;
+    }
+
+    private boolean inBounds(int x, int y) {
+        return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
+    }
+
+    private int evalPositionWeights(MNKBoard b, boolean isAi) {
+        // int player = (isAi) ? aiPosition : humanPosition;
+        MNKCellState player = (isAi) ? me : opponent;
+        int score = 0;
+
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (b.cellState(i, j) == player) {
+                    score += positionWeights[i][j];
+                }
+            }
+        }
+
+        return score;
+    }
+
+    private void createPositionWeights() {
+        positionWeights = new int[M][N];
+
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (inBounds(i + (K - 1), j)) {
+                    for (int l = 0; l < K; l++) {
+                        positionWeights[i + l][j]++;
+                    }
+                }
+
+                if (inBounds(i, j + (K - 1))) {
+                    for (int l = 0; l < K; l++) {
+                        positionWeights[i][j + l]++;
+                    }
+                }
+
+                if (inBounds(i + (K - 1), j + (K - 1))) {
+                    for (int l = 0; l < K; l++) {
+                        positionWeights[i + l][j + l]++;
+                    }
+                }
+
+                if (inBounds(i + (K - 1), j - (K - 1))) {
+                    for (int l = 0; l < K; l++) {
+                        positionWeights[i + l][j - l]++;
+                    }
+                }
+            }
+        }
+    }
 
     private void debugMessage(boolean timeout) {
         if (timeout)
