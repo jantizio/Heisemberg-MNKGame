@@ -128,4 +128,9 @@ public class MinimaxPlayer implements MNKPlayer {
         System.out.println(
                 "(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateCounter);
     }
+
+    private double evaluate()   /* TODO: implementare ognuno il proprio evaluate e richamare questo nel metodo minmax, per avere una stessa interfaccia da richiamare */
+    {
+        return 0.;
+    }
 }
