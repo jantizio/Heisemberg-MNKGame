@@ -22,6 +22,8 @@ public class NostroPlayer implements MNKPlayer {
     public int[][] positionWeights;
     public MNKCellState[][] winSequence;
     public MNKCellState[][] sevenTrapSequence;
+    private static MNKCellState[][] openEndSequence;
+    private static MNKCellState[][] threatSequence;
     private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
 
     private int gameStateCounter, numMosse; // debug variables
@@ -381,6 +383,25 @@ public class NostroPlayer implements MNKPlayer {
                 sevenTrapSequence[i.ordinal()][j] = i;
             }
         }
+    }
+
+    private void createOpenEndSequence(){
+        openEndSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K + 1];
+        for(MNKCellState i : MNKCellState.values()){
+            for (int j = 0; j < K - 1; j++) {
+                openEndSequence[i.ordinal()][j] = i; 
+            }
+        }
+    }
+
+    private void createThreatSequence(){
+        threatSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
+        for(MNKCellState i : MNKCellState.values()){
+            for (int j = 0; j < K; j++) {
+                threatSequence[i.ordinal()][j] = i;
+            }
+        }
+        
     }
 
     private void debugMessage(boolean timeout) {
