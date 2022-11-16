@@ -60,6 +60,8 @@ public class NostroPlayer implements MNKPlayer {
         createPositionWeights();
         createWinSequence();
         createSevenTrapSequence();
+        createOpenEndSequence();
+        createThreatSequence();
 
         // for (int i = 0; i < 3; i++) {
         // for (int j = 0; j < K; j++) {
@@ -386,38 +388,40 @@ public class NostroPlayer implements MNKPlayer {
     }
 
     private int evalOpenEnds(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-		
-		return (countPositionForward(state, openEndSequence[player.ordinal()]) + countPositionBackward(state, openEndSequence[player.ordinal()]));
+        MNKCellState player = (isAi) ? me : opponent;
+
+        return (countPositionForward(state, openEndSequence[player.ordinal()])
+                + countPositionBackward(state, openEndSequence[player.ordinal()]));
     }
 
-    private void createOpenEndSequence(){
+    private void createOpenEndSequence() {
         openEndSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K + 1];
-        for(MNKCellState i : MNKCellState.values()){
+        for (MNKCellState i : MNKCellState.values()) {
             openEndSequence[i.ordinal()][0] = MNKCellState.FREE;
-            for (int j = 0; j < K - 1; j++) {
-                openEndSequence[i.ordinal()][j] = i; 
+            for (int j = 1; j < K - 1; j++) {
+                openEndSequence[i.ordinal()][j] = i;
             }
             openEndSequence[i.ordinal()][K - 1] = MNKCellState.FREE;
-			openEndSequence[i.ordinal()][K] = MNKCellState.FREE;
+            openEndSequence[i.ordinal()][K] = MNKCellState.FREE;
         }
     }
 
     private int evalThreats(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-		
-		return (countPositionForward(state, threatSequence[player.ordinal()]) + countPositionBackward(state, threatSequence[player.ordinal()]));
-	}
+        MNKCellState player = (isAi) ? me : opponent;
 
-    private void createThreatSequence(){
+        return (countPositionForward(state, threatSequence[player.ordinal()])
+                + countPositionBackward(state, threatSequence[player.ordinal()]));
+    }
+
+    private void createThreatSequence() {
         threatSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
-        for(MNKCellState i : MNKCellState.values()){
+        for (MNKCellState i : MNKCellState.values()) {
             threatSequence[i.ordinal()][0] = MNKCellState.FREE;
-            for (int j = 0; j < K; j++) {
+            for (int j = 1; j < K; j++) {
                 threatSequence[i.ordinal()][j] = i;
             }
         }
-        
+
     }
 
     private void debugMessage(boolean timeout) {
