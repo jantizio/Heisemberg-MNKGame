@@ -19,7 +19,10 @@ public class NostroPlayer implements MNKPlayer {
     private int myMovesToWin[];
     private int yourMovesToWin[];
 
-    public static int[][] positionWeights;
+    public int[][] positionWeights;
+    public MNKCellState[][] winSequence;
+    public MNKCellState[][] sevenTrapSequence;
+    private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
 
     private int gameStateCounter, numMosse; // debug variables
 
@@ -53,6 +56,15 @@ public class NostroPlayer implements MNKPlayer {
         numMosse = 0;
 
         createPositionWeights();
+        createWinSequence();
+        createSevenTrapSequence();
+
+        // for (int i = 0; i < 3; i++) {
+        // for (int j = 0; j < K; j++) {
+        // System.out.print(sevenTrapSequence[i][j] + " ");
+        // }
+        // System.out.println();
+        // }
 
     }
 
@@ -288,6 +300,85 @@ public class NostroPlayer implements MNKPlayer {
                         positionWeights[i + l][j - l]++;
                     }
                 }
+            }
+        }
+    }
+
+    private int countPositionBackward(MNKBoard board, MNKCellState[] sequence) {
+        return 0;
+    }
+
+    private int countPositionForward(MNKBoard board, MNKCellState[] sequence) {
+        return 0;
+    }
+
+    private boolean match(MNKBoard board, int x, int y, MNKCellState[] sequence, int directionX, int directionY,
+            int revert) {
+        return false;
+    }
+
+    private int evalWins(MNKBoard state, boolean isAi) {
+        MNKCellState player = (isAi) ? me : opponent;
+        return countPositionForward(state, winSequence[player.ordinal()]);
+    }
+
+    private void createWinSequence() {
+        winSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
+
+        for (MNKCellState i : MNKCellState.values()) {
+            for (int j = 0; j < K; j++) {
+                winSequence[i.ordinal()][j] = i;
+            }
+        }
+    }
+
+    private int evalSevenTraps(MNKBoard state, boolean isAi) {
+        MNKCellState player = (isAi) ? me : opponent;
+
+        int sevenTraps = 0;
+
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N - 1; j++) {
+                if (match(state, i, j, sevenTrapSequence[player.ordinal()], -1, 0, 1)) {
+                    if (match(state, i, j + 1, sevenTrapSequence[player.ordinal()], -1, -1, 1)) {
+                        sevenTraps++;
+                    }
+                }
+
+                if (match(state, i, j, sevenTrapSequence[player.ordinal()], 1, 0, 1)) {
+                    if (match(state, i, j + 1, sevenTrapSequence[player.ordinal()], 1, -1, 1)) {
+                        sevenTraps++;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < M; i++) {
+            for (int j = 1; j < N; j++) {
+                if (match(state, i, j, sevenTrapSequence[player.ordinal()], -1, 0, 1)) {
+                    if (match(state, i, j - 1, sevenTrapSequence[player.ordinal()], -1, 1, 1)) {
+                        sevenTraps++;
+                    }
+                }
+
+                if (match(state, i, j, sevenTrapSequence[player.ordinal()], 1, 0, 1)) {
+                    if (match(state, i, j - 1, sevenTrapSequence[player.ordinal()], 1, 1, 1)) {
+                        sevenTraps++;
+                    }
+                }
+            }
+        }
+
+        return sevenTraps;
+    }
+
+    private void createSevenTrapSequence() {
+        sevenTrapSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
+
+        for (MNKCellState i : MNKCellState.values()) {
+            sevenTrapSequence[i.ordinal()][0] = MNKCellState.FREE;
+            for (int j = 1; j < K; j++) {
+                sevenTrapSequence[i.ordinal()][j] = i;
             }
         }
     }
