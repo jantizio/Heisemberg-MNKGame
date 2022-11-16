@@ -2,6 +2,8 @@ package mnkgame;
 
 import java.util.Random;
 
+import javax.sound.midi.Sequence;
+
 public class MinimaxPlayer implements MNKPlayer {
     private Random rand;
     private MNKBoard B;
@@ -133,4 +135,63 @@ public class MinimaxPlayer implements MNKPlayer {
     {
         return 0.;
     }
+
+    /**
+     * match, cost: O(|sequence|).
+     * @param board board.
+     * @param x pos x.
+     * @param y pos y.
+     * @param sequence sequence of simbols to find.
+     * @param directionX direction x.
+     * @param directionY direction y.
+     * @param revert sequence revertion.
+     * @return true if is thera a sequence, false if else.
+     */
+    private boolean match(MNKBoard board, int x, int y, MNKCellState[] sequence, int directionX, int directionY, int revert)
+    {
+        int s= revert>0 ? 0 : sequence.length-1;
+        
+        if(this.inBounds(board, x+directionX*(sequence.length-1), y+directionY*(sequence.length-1)))
+        {
+            for(int i=0;i <sequence.length;i++)
+            {
+                if(board.cellState(x,y) != sequence[s]) return false;
+                x+=directionX;
+                y+=directionY;
+                s+=revert;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * match position FIXED(ideas in meating 15/11/22), cost: O(4|sequence|) ~ O(|sequence|).
+     * @param board board.
+     * @param x pos x.
+     * @param y pos y.
+     * @param sequence sequence of simbols to find.
+     * @param direction sequence direction.
+     * @return number of sequence starting from the specified position.
+     */
+    private int matchPosition(MNKBoard board, int x, int y, MNKCellState[] sequence, int direction)
+    {
+        int starting=0;
+        if(match(board,x,y,sequence,1,0,direction)) starting++;
+        if(match(board,x,y,sequence,0,1,direction)) starting++;
+        if(match(board,x,y,sequence,1,1,direction)) starting++;
+        if(match(board,x,y,sequence,1,-1,direction)) starting++;
+        return starting;
+    }
+
+    /**
+     * is in the bounds on the board, cost: O(1).
+     * @param board board.
+     * @param x pos x.
+     * @param y pos y.
+     * @return true if is in the bound, false if else.
+     */
+    private boolean inBounds(MNKBoard board,int x, int y) {
+		return (0 <= x) && (x < board.N) && (0 <= y) && (y < board.M);
+	}
 }
