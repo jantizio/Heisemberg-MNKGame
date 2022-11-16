@@ -20,10 +20,10 @@ public class NostroPlayer implements MNKPlayer {
     private int yourMovesToWin[];
 
     public int[][] positionWeights;
-    public MNKCellState[][] winSequence;
-    public MNKCellState[][] sevenTrapSequence;
-    private static MNKCellState[][] openEndSequence;
-    private static MNKCellState[][] threatSequence;
+    private MNKCellState[][] winSequence;
+    private MNKCellState[][] sevenTrapSequence;
+    private MNKCellState[][] openEndSequence;
+    private MNKCellState[][] threatSequence;
     private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
 
     private int gameStateCounter, numMosse; // debug variables
