@@ -174,22 +174,42 @@ public class NostroPlayer implements MNKPlayer {
 	}
 
 	private int eval(MNKBoard b) {
-		MNKGameState result = b.gameState();
-		MNKCell FC[] = b.getFreeCells();
-		int count = 0;
+		// MNKGameState result = b.gameState();
+		// MNKCell FC[] = b.getFreeCells();
+		// int count = 0;
 
-		if (result != MNKGameState.OPEN)
-			return pesi[result.ordinal()] * (1 + FC.length);
-
-		// for (MNKCell cell : FC) {
-		// if (isWinningCell(cell.i, cell.j, K - 1)) {
-		// count += 100;
-		// } else
-		// count -= 50;
-		// }
-		return 15 * (evalPositionWeights(b, true) - evalPositionWeights(b, false));
+		// if (result != MNKGameState.OPEN)
+		// return pesi[result.ordinal()] * (1 + FC.length);
 		// TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
 		// verificare se sono uguali in primo luogo
+
+		// return 15 * (evalPositionWeights(b, true) - evalPositionWeights(b, false));
+		int[] aiScores = { 0, 0, 0, 0, 0 };
+		int[] humanScores = { 0, 0, 0, 0, 0 };
+
+		aiScores[0] = evalWins(b, true);
+		humanScores[0] = evalWins(b, false);
+
+		aiScores[1] = evalThreats(b, true);
+		humanScores[1] = evalThreats(b, false);
+
+		aiScores[2] = evalOpenEnds(b, true);
+		humanScores[2] = evalOpenEnds(b, false);
+
+		aiScores[3] = evalPositionWeights(b, true);
+		humanScores[3] = evalPositionWeights(b, false);
+
+		aiScores[4] = evalSevenTraps(b, true);
+		humanScores[4] = evalSevenTraps(b, false);
+
+		int finalScore = 0;
+
+		for (int i = 0; i < aiScores.length; i++) {
+			System.out.println(aiScores[i] + " - " + humanScores[i]);
+			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
+		}
+
+		return finalScore;
 	}
 
 	private boolean isWinningCell(int i, int j, int target) {
