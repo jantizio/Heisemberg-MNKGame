@@ -20,51 +20,52 @@
  *  along with this file.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mnkgame;
+package player;
 
+import mnkgame.*;
 import java.util.Random;
 
 /**
  * Totally random software player.
  */
-public class RandomPlayer  implements MNKPlayer {
+public class RandomPlayer implements MNKPlayer {
 	private Random rand;
 	private int TIMEOUT;
 
 	/**
-   * Default empty constructor
-   */
+	 * Default empty constructor
+	 */
 	public RandomPlayer() {
 	}
 
 	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
 		// New random seed for each game
-		rand    = new Random(System.currentTimeMillis()); 
+		rand = new Random(System.currentTimeMillis());
 		// Save the timeout for testing purposes
 		TIMEOUT = timeout_in_secs;
-		
+
 		// Uncomment to chech the initialization timeout
-		/* 
-		try {
-			Thread.sleep(1000*2*TIMEOUT);
-		} 
-		catch(Exception e) {
-		}
-		*/
+		/*
+		 * try {
+		 * Thread.sleep(1000*2*TIMEOUT);
+		 * }
+		 * catch(Exception e) {
+		 * }
+		 */
 	}
 
 	/**
-   * Selects a random cell in <code>FC</code>
-   */
+	 * Selects a random cell in <code>FC</code>
+	 */
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 		// Uncomment to chech the move timeout
-		/* 
-		try {
-			Thread.sleep(1000*2*TIMEOUT);
-		} 
-		catch(Exception e) {
-		}
-		*/
+		/*
+		 * try {
+		 * Thread.sleep(1000*2*TIMEOUT);
+		 * }
+		 * catch(Exception e) {
+		 * }
+		 */
 		return FC[rand.nextInt(FC.length)];
 	}
 

@@ -1,8 +1,7 @@
-package mnkgame;
+package player;
 
+import mnkgame.*;
 import java.util.Random;
-
-import javax.sound.midi.Sequence;
 
 public class MinimaxPlayer implements MNKPlayer {
     private Random rand;

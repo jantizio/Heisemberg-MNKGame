@@ -1,13 +1,15 @@
 JC = javac
 JR = java
 
-SRC =  mnkgame
+MNKGAME =  mnkgame
+PLAYER = player
+TESTER = tester
 CLASS = classes
 
-MAIN_CLASS = mnkgame.MNKGame
-TESTER_CLASS = mnkgame.MNKPlayerTester
-PLAYER_CLASS = mnkgame.NostroPlayer
-OPPONENT_PLAYER = mnkgame.QuasiRandomPlayer
+MAIN_CLASS = MNKGame
+TESTER_CLASS = MNKPlayerTester
+PLAYER_CLASS = NostroPlayer
+OPPONENT_CLASS = OurPlayer
 
 CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
 
@@ -23,22 +25,28 @@ MNK = 3 3 3
 rep = 10
 
 build:
-	$(JC) -cp ".." -d $(CLASS) $(SRC)/*.java
+	$(JC) -d $(CLASS) $(PLAYER)/*.java
+
+full-build:
+	$(JC) -d $(CLASS) $(MNKGAME)/*.java && $(JC) -d $(CLASS) $(PLAYER)/*.java && $(JC) -d $(CLASS) $(TESTER)/*.java
 
 vshuman:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
+	$(JR) -cp $(CLASS) $(MNKGAME).$(MAIN_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS)
 
 test1move:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_PLAYER) -r $(rep)
+	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS) $(TESTER).$(OPPONENT_CLASS) -r $(rep)
 
 test2move:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(OPPONENT_PLAYER) $(PLAYER_CLASS) -r $(rep)
+	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(TESTER).$(OPPONENT_CLASS) $(PLAYER).$(PLAYER_CLASS) -r $(rep)
 
 test1moveV:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_PLAYER) -v
+	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS) $(TESTER).$(OPPONENT_CLASS) -v
 
 test2moveV:
-	$(CHANGE_DIR) && $(JR) -cp ".." $(TESTER_CLASS) $(MNK) $(OPPONENT_PLAYER) $(PLAYER_CLASS) -v
+	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(TESTER).$(OPPONENT_CLASS) $(PLAYER).$(PLAYER_CLASS) -v
 
 clean:
+	$(RM) $(CLASS)\$(PLAYER)
+
+full-clean:
 	$(RM) $(CLASS)\
