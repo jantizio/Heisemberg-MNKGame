@@ -14,12 +14,14 @@ public class NostroPlayer implements MNKPlayer {
 
 	private int pesi[];
 	private MNKCell bestMove;
+	private MNKCell globalBestMove;
 	private long timerStart;
-	private int maxDepth;
-	private int myMovesToWin[];
-	private int yourMovesToWin[];
+	private final int INITIAL_DEPTH = 2;
+	private boolean timedOut; // is true if the search got interrupted beacause of timeout
+	private boolean isTreeCompleted; // is true if the search completed the tree
+	private int currentDepth;
 
-	public int[][] positionWeights;
+	private int[][] positionWeights;
 	private MNKCellState[][] winSequence;
 	private MNKCellState[][] sevenTrapSequence;
 	private MNKCellState[][] openEndSequence;
@@ -35,7 +37,6 @@ public class NostroPlayer implements MNKPlayer {
 	}
 
 	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-		maxDepth = 1;
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
 		B = new MNKBoard(M, N, K);
@@ -47,6 +48,7 @@ public class NostroPlayer implements MNKPlayer {
 		this.M = M;
 		this.N = N;
 		this.K = K;
+		isTreeCompleted = true;
 
 		pesi = new int[MNKGameState.WINP2.ordinal() + 1];
 		pesi[myWin.ordinal()] = 1;
@@ -74,6 +76,8 @@ public class NostroPlayer implements MNKPlayer {
 
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 		timerStart = System.currentTimeMillis();
+		timedOut = false;
+		isTreeCompleted = true;
 
 		gameStateCounter = 0;
 		numMosse += 1;
@@ -86,91 +90,104 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-		bestMove = FC[rand.nextInt(FC.length)];
+		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 
-		// for (MNKCell c : FC) {
-		// B.markCell(c.i, c.j);
-		// System.out.println("[" + c.i + ", " + c.j + "]: " + eval(B));
-		// B.unmarkCell();
-		// }
+		// iterative deepening search
+		for (int depth = 0;; depth++) {
+			currentDepth = INITIAL_DEPTH + depth;
+			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+			// if the time is over stop the loop and the best move is the previous one
+			if (timedOut)
+				break;
 
-		iterativeDeepening(B, true, 9);
+			globalBestMove = bestMove; // update the best move
+			System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
+			// if the tree is completed the search is over for this move
+			// if the score is higher than the value of the win,
+			// i found a winning move i can stop the search
+			if (isTreeCompleted || searchResult >= evalWeights[0] / 2)
+				break;
+			isTreeCompleted = true; // if we are here then the flag was false,
+									// need to set to true for the next loop
+		}
 
-		// debugMessage(false);
-		B.markCell(bestMove.i, bestMove.j);
-		return bestMove;
+		System.out.println();
+		B.markCell(globalBestMove.i, globalBestMove.j);
+		return globalBestMove;
 	}
 
 	public String playerName() {
 		return "TicTacToe PRO"; // TODO: scegliere un nome
 	}
 
+	/**
+	 * Performs standard alphabeta pruning algorithm
+	 * 
+	 * @param b            current game board
+	 * @param depth        depth of the tree you want to reach
+	 * @param alpha        best possible score for the maximazing player
+	 * @param beta         best possible score for the minimizer player
+	 * @param isMaximazing whether the current player is the min or max player
+	 * @return the score of the given board
+	 */
 	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing) {
 		gameStateCounter += 1;
-		// if we are in a terminal state, evaluate the score
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
 		int bestScore;
-		if (result != MNKGameState.OPEN || depth >= maxDepth) {
-			int ev = eval(b);
-			// System.out.println(ev + "\n");
-			return ev;
+		// if we are in terminal state or the depth is reached stop the recursion and
+		// evaluate the score of the current board
+		if (result != MNKGameState.OPEN || depth == 0) {
+			if (depth <= 0)
+				isTreeCompleted = false;
+			return eval(b);
 		}
 
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
 			for (MNKCell c : FC) {
-				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
+					timedOut = true;
 					return bestScore;
+				}
 
 				B.markCell(c.i, c.j);
-				int score = alphabeta(B, depth + 1, alpha, beta, false);
+				int score = alphabeta(B, depth - 1, alpha, beta, false);
 				B.unmarkCell();
 
 				if (score > bestScore) {
 					bestScore = score;
-					if (depth == 0)
+					if (depth == currentDepth)
 						bestMove = c;
 				}
-				// bestScore = Math.max(score, bestScore);
 				alpha = Math.max(alpha, bestScore);
 				if (alpha >= beta)
-					break; // beta cutoff
+					break;
 
 			}
 		} else {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell c : FC) {
-				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0))
+				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
+					timedOut = true;
 					return bestScore;
-
+				}
 				B.markCell(c.i, c.j);
-				int score = alphabeta(B, depth + 1, alpha, beta, true);
+				int score = alphabeta(B, depth - 1, alpha, beta, true);
 				B.unmarkCell();
 
 				if (score < bestScore) {
 					bestScore = score;
-					if (depth == 0)
+					if (depth == currentDepth)
 						bestMove = c;
 				}
-				// bestScore = Math.min(score, bestScore);
 				beta = Math.min(beta, bestScore);
 				if (beta <= alpha)
 					break;
 			}
 		}
 		return bestScore;
-	}
 
-	private int iterativeDeepening(MNKBoard b, boolean isMaximazing, int depth) {
-		int alpha = Integer.MIN_VALUE;
-		int beta = Integer.MAX_VALUE;
-		int eval = 0;
-		for (int i = 0; i < depth; i++) {
-			eval = alphabeta(b, 0, alpha, beta, isMaximazing);
-			maxDepth += 1;
-		}
-		return eval;
 	}
 
 	private int eval(MNKBoard b) {
@@ -183,10 +200,10 @@ public class NostroPlayer implements MNKPlayer {
 		// TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
 		// verificare se sono uguali in primo luogo
 
-		// return 15 * (evalPositionWeights(b, true) - evalPositionWeights(b, false));
 		int[] aiScores = { 0, 0, 0, 0, 0 };
 		int[] humanScores = { 0, 0, 0, 0, 0 };
 
+		// if b.gameState() == WINP1 or WINP2 then valuta
 		aiScores[0] = evalWins(b, true);
 		humanScores[0] = evalWins(b, false);
 
@@ -205,75 +222,11 @@ public class NostroPlayer implements MNKPlayer {
 		int finalScore = 0;
 
 		for (int i = 0; i < aiScores.length; i++) {
-			System.out.println(aiScores[i] + " - " + humanScores[i]);
+			// System.out.println(aiScores[i] + " - " + humanScores[i]);
 			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
 		}
 
 		return finalScore;
-	}
-
-	private boolean isWinningCell(int i, int j, int target) {
-		MNKCellState s = B.cellState(i, j);
-		int n;
-
-		// Useless pedantic check
-		if (s == MNKCellState.FREE)
-			return false;
-
-		MNKCellState notS = s == MNKCellState.P1 ? MNKCellState.P2 : MNKCellState.P1;
-
-		int freeN = 0;
-		int emptyCheck = K - target;
-
-		// Horizontal check
-		n = 1;
-		for (int k = 1; j - k >= 0 && freeN <= emptyCheck; k++) {
-			MNKCellState p = B.cellState(i, j - k);
-			if (p == MNKCellState.FREE)
-				freeN += 1;
-			else if (p != s)
-				break;
-			n++;
-		} // backward check
-		for (int k = 1; j + k < N && freeN <= emptyCheck; k++) {
-			MNKCellState p = B.cellState(i, j - k);
-			if (p == MNKCellState.FREE)
-				freeN += 1;
-			else if (p != s)
-				break;
-			n++;
-		} // forward check
-		if (n >= target)
-			return true;
-
-		// Vertical check
-		n = 1;
-		for (int k = 1; i - k >= 0 && B.cellState(i - k, j) == s; k++)
-			n++; // backward check
-		for (int k = 1; i + k < M && B.cellState(i + k, j) == s; k++)
-			n++; // forward check
-		if (n >= target)
-			return true;
-
-		// Diagonal check
-		n = 1;
-		for (int k = 1; i - k >= 0 && j - k >= 0 && B.cellState(i - k, j - k) == s; k++)
-			n++; // backward check
-		for (int k = 1; i + k < M && j + k < N && B.cellState(i + k, j + k) == s; k++)
-			n++; // forward check
-		if (n >= target)
-			return true;
-
-		// Anti-diagonal check
-		n = 1;
-		for (int k = 1; i - k >= 0 && j + k < N && B.cellState(i - k, j + k) == s; k++)
-			n++; // backward check
-		for (int k = 1; i + k < M && j - k >= 0 && B.cellState(i + k, j - k) == s; k++)
-			n++; // backward check
-		if (n >= target)
-			return true;
-
-		return false;
 	}
 
 	/**
@@ -511,8 +464,8 @@ public class NostroPlayer implements MNKPlayer {
 	 */
 	private int countPositionForward(MNKBoard board, MNKCellState[] sequence) {
 		int sequenceCount = 0;
-		for (int i = 0; i < board.N; i++)
-			for (int j = 0; j < board.M; j++)
+		for (int i = 0; i < M; i++)
+			for (int j = 0; j < N; j++)
 				sequenceCount += matchPosition(board, i, j, sequence, 1);
 		return sequenceCount;
 	}
@@ -527,8 +480,8 @@ public class NostroPlayer implements MNKPlayer {
 	 */
 	private int countPositionBackward(MNKBoard board, MNKCellState[] sequence) {
 		int sequenceCount = 0;
-		for (int i = 0; i < board.N; i++)
-			for (int j = 0; j < board.M; j++)
+		for (int i = 0; i < M; i++)
+			for (int j = 0; j < N; j++)
 				sequenceCount += matchPosition(board, i, j, sequence, -1);
 		return sequenceCount;
 	}
