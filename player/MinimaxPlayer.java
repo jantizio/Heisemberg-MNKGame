@@ -1,5 +1,6 @@
-package mnkgame;
+package player;
 
+import mnkgame.*;
 import java.util.Random;
 
 public class MinimaxPlayer implements MNKPlayer {
