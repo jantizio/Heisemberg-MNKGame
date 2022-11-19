@@ -12,16 +12,18 @@ TESTER_CLASS = $(MNKGAME).MNKPlayerTester
 PLAYER_CLASS = $(PLAYER).NostroPlayer
 OPPONENT_CLASS = $(TESTER).OurPlayer
 
-RUNTIME_OPTIONS = -cp $(CLASS):$(LIB)/* -Xmx8G
-CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
-
 ifeq ($(OS),Windows_NT)
 	detected_OS := Windows
 	RM = rmdir /s /q
+	SEP = ;
 else
 	detected_OS := $(shell uname)
 	RM = rm -rf
+	SEP = :
 endif
+
+RUNTIME_OPTIONS = -cp $(CLASS)$(SEP)$(LIB)/* -Xmx8G
+CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
 
 MNK = 3 3 3
 rep = 10
