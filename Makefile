@@ -5,12 +5,14 @@ MNKGAME =  mnkgame
 PLAYER = player
 TESTER = tester
 CLASS = classes
+LIB = lib
 
-MAIN_CLASS = MNKGame
-TESTER_CLASS = MNKPlayerTester
-PLAYER_CLASS = NostroPlayer
-OPPONENT_CLASS = OurPlayer
+MAIN_CLASS = $(MNKGAME).MNKGame
+TESTER_CLASS = $(MNKGAME).MNKPlayerTester
+PLAYER_CLASS = $(PLAYER).NostroPlayer
+OPPONENT_CLASS = $(TESTER).OurPlayer
 
+RUNTIME_OPTIONS = -cp $(CLASS);$(LIB)/* -Xmx8G
 CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
 
 ifeq ($(OS),Windows_NT)
@@ -28,22 +30,25 @@ build:
 	$(JC) -d $(CLASS) $(PLAYER)/*.java
 
 full-build:
-	$(JC) -d $(CLASS) $(MNKGAME)/*.java && $(JC) -d $(CLASS) $(PLAYER)/*.java && $(JC) -d $(CLASS) $(TESTER)/*.java
+	$(JC) -d $(CLASS) $(MNKGAME)/*.java && $(JC) -d $(CLASS) $(PLAYER)/*.java
 
 vshuman:
-	$(JR) -cp $(CLASS) $(MNKGAME).$(MAIN_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS)
+	$(JR) $(RUNTIME_OPTIONS) (MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
 
 test1move:
-	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS) $(TESTER).$(OPPONENT_CLASS) -r $(rep)
+	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_CLASS) -r $(rep)
 
 test2move:
-	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(TESTER).$(OPPONENT_CLASS) $(PLAYER).$(PLAYER_CLASS) -r $(rep)
+	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(OPPONENT_CLASS) $(PLAYER_CLASS) -r $(rep)
 
 test1moveV:
-	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(PLAYER).$(PLAYER_CLASS) $(TESTER).$(OPPONENT_CLASS) -v
+	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_CLASS) -v
 
 test2moveV:
-	$(JR) -cp $(CLASS) $(MNKGAME).$(TESTER_CLASS) $(MNK) $(TESTER).$(OPPONENT_CLASS) $(PLAYER).$(PLAYER_CLASS) -v
+	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(OPPONENT_CLASS) $(PLAYER_CLASS) -v
+
+complete-test:
+	$(JR) $(RUNTIME_OPTIONS) player.Tester
 
 clean:
 	$(RM) $(CLASS)\$(PLAYER)
