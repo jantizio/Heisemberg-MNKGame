@@ -3,7 +3,7 @@ JR = java
 
 MNKGAME =  mnkgame
 PLAYER = player
-TESTER = tester
+TESTER = boneless
 CLASS = classes
 LIB = lib
 
@@ -12,7 +12,7 @@ TESTER_CLASS = $(MNKGAME).MNKPlayerTester
 PLAYER_CLASS = $(PLAYER).NostroPlayer
 OPPONENT_CLASS = $(TESTER).OurPlayer
 
-RUNTIME_OPTIONS = -cp $(CLASS);$(LIB)/* -Xmx8G
+RUNTIME_OPTIONS = -cp $(CLASS):$(LIB)/* -Xmx8G
 CHANGE_DIR = cd "./$(CLASS)/$(SRC)"
 
 ifeq ($(OS),Windows_NT)
