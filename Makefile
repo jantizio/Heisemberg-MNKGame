@@ -35,7 +35,7 @@ full-build:
 	$(JC) -d $(CLASS) $(MNKGAME)/*.java && $(JC) -d $(CLASS) $(PLAYER)/*.java
 
 vshuman:
-	$(JR) $(RUNTIME_OPTIONS) (MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
+	$(JR) $(RUNTIME_OPTIONS) $(MAIN_CLASS) $(MNK) $(PLAYER_CLASS)
 
 test1move:
 	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(PLAYER_CLASS) $(OPPONENT_CLASS) -r $(rep)
