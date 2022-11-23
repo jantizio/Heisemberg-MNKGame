@@ -152,9 +152,9 @@ public class NostroPlayer implements MNKPlayer {
 					return bestScore;
 				}
 
-				B.markCell(c.i, c.j);
-				int score = alphabeta(B, depth - 1, alpha, beta, false);
-				B.unmarkCell();
+				b.markCell(c.i, c.j);
+				int score = alphabeta(b, depth - 1, alpha, beta, false);
+				b.unmarkCell();
 
 				if (score > bestScore) {
 					bestScore = score;
@@ -173,9 +173,9 @@ public class NostroPlayer implements MNKPlayer {
 					timedOut = true;
 					return bestScore;
 				}
-				B.markCell(c.i, c.j);
-				int score = alphabeta(B, depth - 1, alpha, beta, true);
-				B.unmarkCell();
+				b.markCell(c.i, c.j);
+				int score = alphabeta(b, depth - 1, alpha, beta, true);
+				b.unmarkCell();
 
 				if (score < bestScore) {
 					bestScore = score;
