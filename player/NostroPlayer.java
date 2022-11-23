@@ -14,8 +14,10 @@ public class NostroPlayer implements MNKPlayer {
 	private int M, N, K;
 
 	private int pesi[];
-	private MNKCell bestMove;
-	private MNKCell globalBestMove;
+	// private MNKCell bestMove;
+	private int[] bestMove;
+	// private MNKCell globalBestMove;
+	private int[] globalBestMove;
 	private long timerStart;
 	private final int INITIAL_DEPTH = 2;
 	private boolean timedOut; // is true if the search got interrupted beacause of timeout
@@ -113,7 +115,7 @@ public class NostroPlayer implements MNKPlayer {
 		}
 
 		System.out.println();
-		B.markCell(globalBestMove.i, globalBestMove.j);
+		B.markCell(globalBestMove[0], globalBestMove[1]);
 		return globalBestMove;
 	}
 
@@ -135,6 +137,7 @@ public class NostroPlayer implements MNKPlayer {
 		gameStateCounter += 1;
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
+		MNKCell MC[] = b.getMarkedCells();
 		int bestScore;
 		// if we are in terminal state or the depth is reached stop the recursion and
 		// evaluate the score of the current board
@@ -143,48 +146,68 @@ public class NostroPlayer implements MNKPlayer {
 				isTreeCompleted = false;
 			return eval(b);
 		}
+		
 
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
-			for (MNKCell c : FC) {
+			for (MNKCell cell : MC) {
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
+				int score = Integer.MIN_VALUE;
+				for (int x = -1; x <= 1; x++) {
+					for (int y = -1; y <= 1; y++) {
+						if(x == 0 && y==0) continue;
+						if(inBounds(cell.i+x, cell.j+y) && b.cellState(cell.i+x, cell.j+y)== MNKCellState.FREE){
+							b.markCell(cell.i+x, cell.j+y);
+							score = alphabeta(b, depth - 1, alpha, beta, false);
+							b.unmarkCell();
 
-				b.markCell(c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, false);
-				b.unmarkCell();
-
-				if (score > bestScore) {
-					bestScore = score;
-					if (depth == currentDepth)
-						bestMove = c;
+							if (score > bestScore) {
+								bestScore = score;
+								if (depth == currentDepth){
+									bestMove[0]=cell.i+x;
+									bestMove[1]= cell.j+y;}
+							}
+							alpha = Math.max(alpha, bestScore);
+							if (alpha >= beta)
+								break;
+						}
+					}
 				}
-				alpha = Math.max(alpha, bestScore);
-				if (alpha >= beta)
-					break;
-
+				
 			}
+			
 		} else {
 			bestScore = Integer.MAX_VALUE;
-			for (MNKCell c : FC) {
-				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
+			for (MNKCell cell : MC) {
+				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
-				b.markCell(c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, true);
-				b.unmarkCell();
+				int score = Integer.MIN_VALUE;
+				for (int x = -1; x <= 1; x++) {
+					for (int y = -1; y <= 1; y++) {
+						if(x == 0 && y == 0) continue;
+						if(inBounds(cell.i+x, cell.j+y) && b.cellState(cell.i+x, cell.j+y)== MNKCellState.FREE){
+							b.markCell(cell.i+x, cell.j+y);
+							score = alphabeta(b, depth - 1, alpha, beta, false);
+							b.unmarkCell();
 
-				if (score < bestScore) {
-					bestScore = score;
-					if (depth == currentDepth)
-						bestMove = c;
+							if (score < bestScore) {
+								bestScore = score;
+								if (depth == currentDepth){
+									bestMove[0]=cell.i+x;
+									bestMove[1]= cell.j+y;}
+							}
+							beta = Math.min(beta, bestScore);
+							if (beta<=alpha)
+								break;
+						}
+					}
 				}
-				beta = Math.min(beta, bestScore);
-				if (beta <= alpha)
-					break;
+				
 			}
 		}
 		return bestScore;
