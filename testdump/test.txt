@@ -1,0 +1,115 @@
+3 3 3
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+4 3 3
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+4 4 3
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+4 4 4
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+5 4 4
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+5 5 4
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+5 5 5
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+6 4 4
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+6 5 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+6 6 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+6 6 5
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+6 6 6
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 4 4
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 5 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+7 6 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+7 7 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+TicTacToe PRO Score: 3 Won: 1 Lost: 0 Draw: 0 Error: 0
+7 5 5
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 6 5
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 7 5
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 7 6
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+7 7 7
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+Boneless Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+TicTacToe PRO Score: 1 Won: 0 Lost: 0 Draw: 1 Error: 0
+8 8 4
+TicTacToe PRO Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+10 10 5
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
+Boneless Score: 3 Won: 1 Lost: 0 Draw: 0 Error: 0
+Boneless Score: 2 Won: 1 Lost: 0 Draw: 0 Error: 0
+TicTacToe PRO Score: 0 Won: 0 Lost: 1 Draw: 0 Error: 0
