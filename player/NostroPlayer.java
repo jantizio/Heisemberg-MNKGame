@@ -14,10 +14,8 @@ public class NostroPlayer implements MNKPlayer {
 	private int M, N, K;
 
 	private int pesi[];
-	// private MNKCell bestMove;
-	private int[] bestMove;
-	// private MNKCell globalBestMove;
-	private int[] globalBestMove;
+	private MNKCell bestMove;
+	private MNKCell globalBestMove;
 	private long timerStart;
 	private final int INITIAL_DEPTH = 2;
 	private boolean timedOut; // is true if the search got interrupted beacause of timeout
@@ -93,6 +91,24 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
+		int x = 0, y = 0, max = -1;
+		if (FC.length == M * N) {
+			for (int i = 0; i < M; i++) {
+				for (int j = 0; j < N; j++) {
+					if (positionWeights[i][j] > max) {
+						max = positionWeights[i][j];
+						x = i;
+						y = j;
+					}
+				}
+			}
+
+			B.markCell(x, y);
+
+			return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
+
+		}
+
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 
 		// iterative deepening search
@@ -115,7 +131,7 @@ public class NostroPlayer implements MNKPlayer {
 		}
 
 		System.out.println();
-		B.markCell(globalBestMove[0], globalBestMove[1]);
+		B.markCell(globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
 
@@ -146,7 +162,6 @@ public class NostroPlayer implements MNKPlayer {
 				isTreeCompleted = false;
 			return eval(b);
 		}
-		
 
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
@@ -156,19 +171,24 @@ public class NostroPlayer implements MNKPlayer {
 					return bestScore;
 				}
 				int score = Integer.MIN_VALUE;
-				for (int x = -1; x <= 1; x++) {
-					for (int y = -1; y <= 1; y++) {
-						if(x == 0 && y==0) continue;
-						if(inBounds(cell.i+x, cell.j+y) && b.cellState(cell.i+x, cell.j+y)== MNKCellState.FREE){
-							b.markCell(cell.i+x, cell.j+y);
+				for (int x = -2; x <= 2; x++) {
+					for (int y = -2; y <= 2; y++) {
+						if (x == 0 && y == 0)
+							continue;
+						if (inBounds(cell.i + x, cell.j + y)
+								&& b.cellState(cell.i + x, cell.j + y) == MNKCellState.FREE) {
+							b.markCell(cell.i + x, cell.j + y);
+							MNKCell[] tempMC = b.getMarkedCells();
+							MNKCell c = tempMC[tempMC.length - 1];
+							// System.out.println((cell.i + x) + " " + (cell.j + y) + " " + c);
 							score = alphabeta(b, depth - 1, alpha, beta, false);
 							b.unmarkCell();
 
 							if (score > bestScore) {
 								bestScore = score;
-								if (depth == currentDepth){
-									bestMove[0]=cell.i+x;
-									bestMove[1]= cell.j+y;}
+								if (depth == currentDepth) {
+									bestMove = c;
+								}
 							}
 							alpha = Math.max(alpha, bestScore);
 							if (alpha >= beta)
@@ -176,9 +196,7 @@ public class NostroPlayer implements MNKPlayer {
 						}
 					}
 				}
-				
 			}
-			
 		} else {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell cell : MC) {
@@ -187,27 +205,32 @@ public class NostroPlayer implements MNKPlayer {
 					return bestScore;
 				}
 				int score = Integer.MIN_VALUE;
-				for (int x = -1; x <= 1; x++) {
-					for (int y = -1; y <= 1; y++) {
-						if(x == 0 && y == 0) continue;
-						if(inBounds(cell.i+x, cell.j+y) && b.cellState(cell.i+x, cell.j+y)== MNKCellState.FREE){
-							b.markCell(cell.i+x, cell.j+y);
+				for (int x = -2; x <= 2; x++) {
+					for (int y = -2; y <= 2; y++) {
+						if (x == 0 && y == 0)
+							continue;
+						if (inBounds(cell.i + x, cell.j + y)
+								&& b.cellState(cell.i + x, cell.j + y) == MNKCellState.FREE) {
+							b.markCell(cell.i + x, cell.j + y);
+							MNKCell[] tempMC = b.getMarkedCells();
+							MNKCell c = tempMC[tempMC.length - 1];
+							// System.out.println((cell.i + x) + " " + (cell.j + y) + " " + c);
 							score = alphabeta(b, depth - 1, alpha, beta, false);
 							b.unmarkCell();
 
 							if (score < bestScore) {
 								bestScore = score;
-								if (depth == currentDepth){
-									bestMove[0]=cell.i+x;
-									bestMove[1]= cell.j+y;}
+								if (depth == currentDepth) {
+									bestMove = c;
+								}
 							}
 							beta = Math.min(beta, bestScore);
-							if (beta<=alpha)
+							if (beta <= alpha)
 								break;
 						}
 					}
 				}
-				
+
 			}
 		}
 		return bestScore;
