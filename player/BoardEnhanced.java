@@ -70,19 +70,21 @@ public class BoardEnhanced {
         return ((0 <= p) && (p < M * N)) ? true : false;
     }
 
-    private void printMatrix() {
+    public void printMatrix() {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                System.out.print(board[matrixToArrayCoords(i, j)].getWeight() + " ");
+                int p = matrixToArrayCoords(i, j);
+                System.out.printf("%-4s : %-3d", board[p].state, board[p].getWeight());
             }
             System.out.println();
         }
-        System.out.println();
+        // System.out.println();
     }
 
     public CellEnhanced[] getMoveOrder() {
         Arrays.sort(moveOrder);
-        return moveOrder;
+        CellEnhanced[] temp = moveOrder.clone();
+        return temp;
     }
 
     public static void main(String[] args) {
@@ -91,14 +93,36 @@ public class BoardEnhanced {
         b.printMatrix();
         b.markCell(0, 2);
         b.printMatrix();
-        b.markCell(1, 2);
+        b.markCell(2, 2);
         b.printMatrix();
 
         System.out.println(Arrays.toString(b.getMoveOrder()));
         System.out.println();
         b.markCell(0, 0);
 
+        for (int i = 0; i < b.M; i++) {
+            for (int j = 0; j < b.N; j++) {
+                System.out.print(b.mnkboard.cellState(i, j) + " ");
+            }
+            System.out.println();
+        }
+
         System.out.println(Arrays.toString(b.getMoveOrder()));
+
+        b.unmarkCell(0, 0);
+        b.printMatrix();
+        System.out.println(Arrays.toString(b.getMoveOrder()));
+
+        b.unmarkCell(2, 2);
+        b.unmarkCell(0, 2);
+        b.printMatrix();
+        System.out.println(Arrays.toString(b.getMoveOrder()));
+        for (int i = 0; i < b.M; i++) {
+            for (int j = 0; j < b.N; j++) {
+                System.out.print(b.mnkboard.cellState(i, j) + " ");
+            }
+            System.out.println();
+        }
     }
 
 }

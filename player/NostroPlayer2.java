@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class NostroPlayer2 implements MNKPlayer {
 	private Random rand;
-	private MNKBoard B;
+	// private MNKBoard B;
 	private BoardEnhanced BE;
 	private MNKGameState myWin;
 	private MNKGameState yourWin;
@@ -20,7 +20,7 @@ public class NostroPlayer2 implements MNKPlayer {
 	private MNKCell bestMove;
 	private MNKCell globalBestMove;
 	private long timerStart;
-	private final int INITIAL_DEPTH = 2;
+	private final int INITIAL_DEPTH = 3;
 	private boolean timedOut; // is true if the search got interrupted beacause of timeout
 	private boolean isTreeCompleted; // is true if the search completed the tree
 	private int currentDepth;
@@ -43,8 +43,8 @@ public class NostroPlayer2 implements MNKPlayer {
 	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
-		B = new MNKBoard(M, N, K);
-		BE = new BoardEnhanced(M, N, K, B);
+		// B = new MNKBoard(M, N, K);
+		BE = new BoardEnhanced(M, N, K);
 		myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
 		yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 		me = first ? MNKCellState.P1 : MNKCellState.P2;
@@ -102,18 +102,23 @@ public class NostroPlayer2 implements MNKPlayer {
 			currentDepth = INITIAL_DEPTH + depth;
 			int searchResult = alphabeta(BE, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			// if the time is over stop the loop and the best move is the previous one
-			if (timedOut)
+			if (timedOut) {
+				System.out.println("tempo finito");
 				break;
+			}
 
 			globalBestMove = bestMove; // update the best move
-			System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
+			System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove
+					+ " with score: " + searchResult);
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
-			if (isTreeCompleted || searchResult >= evalWeights[0] / 2)
+			if (isTreeCompleted || searchResult >= evalWeights[0] / 2) {
+				System.out.println((isTreeCompleted) ? "albero completato" : "trovata mossa vincente al 100%");
 				break;
+			}
 			isTreeCompleted = true; // if we are here then the flag was false,
-									// need to set to true for the next loop
+			// need to set to true for the next loop
 		}
 
 		System.out.println("Move chosen!\n");
@@ -138,27 +143,29 @@ public class NostroPlayer2 implements MNKPlayer {
 	private int alphabeta(BoardEnhanced b, int depth, int alpha, int beta, boolean isMaximazing) {
 		gameStateCounter += 1;
 		MNKGameState result = b.mnkboard.gameState();
-		// MNKCell FC[] = b.mnkboard.getFreeCells();
+		// b.printMatrix();
 		int bestScore;
 		// if we are in terminal state or the depth is reached stop the recursion and
 		// evaluate the score of the current board
 		if (result != MNKGameState.OPEN || depth == 0) {
 			if (depth <= 0)
 				isTreeCompleted = false;
-			return eval(b.mnkboard);
+			int val = eval(b.mnkboard);
+			// System.out.println("^ questa board vale: " + val + "\n\n");
+			return val;
 		}
 		CellEnhanced moves[] = b.getMoveOrder();
-		// System.out.println(Arrays.toString(moves));
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
 			for (CellEnhanced c : moves) {
+				if (c.state != MNKCellState.FREE)
+					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
-				if (c.state != MNKCellState.FREE)
-					continue;
-				// System.out.println(depth + " " + c.toString());
+				// System.out.println(c + "\n");
+
 				b.markCell(c.i, c.j);
 				int score = alphabeta(b, depth - 1, alpha, beta, false);
 				b.unmarkCell(c.i, c.j);
@@ -166,22 +173,25 @@ public class NostroPlayer2 implements MNKPlayer {
 				if (score > bestScore) {
 					bestScore = score;
 					if (depth == currentDepth)
-						bestMove = new MNKCell(c.i, c.j, c.state);
+						bestMove = new MNKCell(c.i, c.j);
 				}
 				alpha = Math.max(alpha, bestScore);
+				// System.out.println("a: " + alpha + ", b: " + beta + ((alpha >= beta) ? "
+				// cutoff" : " no cutoff"));
 				if (alpha >= beta)
 					break;
+
 			}
 		} else {
 			bestScore = Integer.MAX_VALUE;
 			for (CellEnhanced c : moves) {
+				if (c.state != MNKCellState.FREE)
+					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
-				if (c.state != MNKCellState.FREE)
-					continue;
-				// System.out.println(depth + " " + c.toString());
+				// System.out.println(c + "\n");
 				b.markCell(c.i, c.j);
 				int score = alphabeta(b, depth - 1, alpha, beta, true);
 				b.unmarkCell(c.i, c.j);
@@ -189,14 +199,15 @@ public class NostroPlayer2 implements MNKPlayer {
 				if (score < bestScore) {
 					bestScore = score;
 					if (depth == currentDepth)
-						bestMove = new MNKCell(c.i, c.j, c.state);
+						bestMove = new MNKCell(c.i, c.j);
 				}
 				beta = Math.min(beta, bestScore);
-				if (beta <= alpha)
+				// System.out.println("a: " + alpha + ", b: " + beta + ((alpha >= beta) ? "
+				// cutoff" : " no cutoff"));
+				if (alpha >= beta)
 					break;
 			}
 		}
-		// System.out.println("Recursive call endend\n");
 		return bestScore;
 	}
 
