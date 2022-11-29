@@ -178,8 +178,8 @@ public class NostroPlayer implements MNKPlayer {
 						if (inBounds(cell.i + x, cell.j + y)
 								&& b.cellState(cell.i + x, cell.j + y) == MNKCellState.FREE) {
 							b.markCell(cell.i + x, cell.j + y);
-							MNKCell[] tempMC = b.getMarkedCells();
-							MNKCell c = tempMC[tempMC.length - 1];
+							// MNKCell[] tempMC = b.getMarkedCells();
+							// MNKCell c = tempMC[tempMC.length - 1];
 							// System.out.println((cell.i + x) + " " + (cell.j + y) + " " + c);
 							score = alphabeta(b, depth - 1, alpha, beta, false);
 							b.unmarkCell();
@@ -187,7 +187,7 @@ public class NostroPlayer implements MNKPlayer {
 							if (score > bestScore) {
 								bestScore = score;
 								if (depth == currentDepth) {
-									bestMove = c;
+									bestMove = new MNKCell(cell.i + x, cell.j + y, MNKCellState.FREE);
 								}
 							}
 							alpha = Math.max(alpha, bestScore);
@@ -212,8 +212,8 @@ public class NostroPlayer implements MNKPlayer {
 						if (inBounds(cell.i + x, cell.j + y)
 								&& b.cellState(cell.i + x, cell.j + y) == MNKCellState.FREE) {
 							b.markCell(cell.i + x, cell.j + y);
-							MNKCell[] tempMC = b.getMarkedCells();
-							MNKCell c = tempMC[tempMC.length - 1];
+							// MNKCell[] tempMC = b.getMarkedCells();
+							// MNKCell c = tempMC[tempMC.length - 1];
 							// System.out.println((cell.i + x) + " " + (cell.j + y) + " " + c);
 							score = alphabeta(b, depth - 1, alpha, beta, false);
 							b.unmarkCell();
@@ -221,7 +221,7 @@ public class NostroPlayer implements MNKPlayer {
 							if (score < bestScore) {
 								bestScore = score;
 								if (depth == currentDepth) {
-									bestMove = c;
+									bestMove = new MNKCell(cell.i + x, cell.j + y, MNKCellState.FREE);
 								}
 							}
 							beta = Math.min(beta, bestScore);
