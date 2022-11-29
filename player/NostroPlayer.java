@@ -141,7 +141,14 @@ public class NostroPlayer implements MNKPlayer {
 		if (result != MNKGameState.OPEN || depth == 0) {
 			if (depth <= 0)
 				isTreeCompleted = false;
-			return eval(b);
+			int ev = eval(b), prev_ev = previous_eval(b);
+
+			if (ev != prev_ev) {
+				System.err.println(
+						"Errore funzione di valutazione diverge\n" + b.getMarkedCells()[0] + " " + b.gameState() + " "
+								+ prev_ev + "\n");
+			}
+			return ev;
 		}
 
 		if (isMaximazing) {
@@ -204,7 +211,49 @@ public class NostroPlayer implements MNKPlayer {
 		int[] aiScores = { 0, 0, 0, 0, 0 };
 		int[] humanScores = { 0, 0, 0, 0, 0 };
 
-		// if b.gameState() == WINP1 or WINP2 then valuta
+		if (b.gameState() == myWin)
+			aiScores[0] = 1;
+		if (b.gameState() == yourWin)
+			humanScores[0] = 1;
+
+		aiScores[1] = evalThreats(b, true);
+		humanScores[1] = evalThreats(b, false);
+
+		aiScores[2] = evalOpenEnds(b, true);
+		humanScores[2] = evalOpenEnds(b, false);
+
+		aiScores[3] = evalPositionWeights(b, true);
+		humanScores[3] = evalPositionWeights(b, false);
+
+		aiScores[4] = evalSevenTraps(b, true);
+		humanScores[4] = evalSevenTraps(b, false);
+
+		int finalScore = 0;
+
+		for (int i = 0; i < aiScores.length; i++) {
+			// if (b.gameState() == MNKGameState.OPEN)
+			// System.out.println(i + ": " + aiScores[i] + " - " + humanScores[i]);
+			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
+		}
+
+		// if (b.gameState() == MNKGameState.OPEN)
+		// System.out.println(finalScore);
+		return finalScore;
+	}
+
+	private int previous_eval(MNKBoard b) {
+		// MNKGameState result = b.gameState();
+		// MNKCell FC[] = b.getFreeCells();
+		// int count = 0;
+
+		// if (result != MNKGameState.OPEN)
+		// return pesi[result.ordinal()] * (1 + FC.length);
+		// TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
+		// verificare se sono uguali in primo luogo
+
+		int[] aiScores = { 0, 0, 0, 0, 0 };
+		int[] humanScores = { 0, 0, 0, 0, 0 };
+
 		aiScores[0] = evalWins(b, true);
 		humanScores[0] = evalWins(b, false);
 
@@ -223,7 +272,6 @@ public class NostroPlayer implements MNKPlayer {
 		int finalScore = 0;
 
 		for (int i = 0; i < aiScores.length; i++) {
-			// System.out.println(aiScores[i] + " - " + humanScores[i]);
 			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
 		}
 
