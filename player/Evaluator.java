@@ -11,8 +11,9 @@ public class Evaluator {
     private MNKCellState[][] openEndSequence;
     private MNKCellState[][] threatSequence;
 
-    private int[] myScores;
-    private int[] opponentScores;
+    private int currentMove;
+    private int[][] myScores;
+    private int[][] opponentScores;
     private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
 
     public Evaluator(int m, int n, int k, boolean first) {
@@ -20,12 +21,15 @@ public class Evaluator {
         N = n;
         K = k;
 
-        myScores = new int[5];
-        opponentScores = new int[5];
+        myScores = new int[20][5];
+        opponentScores = new int[20][5];
         for (int i = 0; i < myScores.length; i++) {
-            myScores[i] = 0;
-            opponentScores[i] = 0;
+            for (int j = 0; j < myScores[0].length; j++) {
+                myScores[i][j] = 0;
+                opponentScores[i][j] = 0;
+            }
         }
+        currentMove = 0;
         me = first ? MNKCellState.P1 : MNKCellState.P2;
         opponent = first ? MNKCellState.P2 : MNKCellState.P1;
 
@@ -179,18 +183,46 @@ public class Evaluator {
      * @implNote O(4*8K^2) ~ O(K^2)
      */
     public void calculateIncidence(MNKBoard b, int i, int j) {
+        currentMove += 1;
+
         // add the weight of the new cell
+        int cellWeight = positionWeights[i][j] * evalWeights[3]; // O(1)
+        myScores[currentMove][3] = myScores[currentMove - 1][3];
+        opponentScores[currentMove][3] = opponentScores[currentMove - 1][3];
         if (b.cellState(i, j) == me)
-            myScores[3] += positionWeights[i][j] * evalWeights[3]; // O(1)
+            myScores[currentMove][3] += cellWeight;
         if (b.cellState(i, j) == opponent)
-            opponentScores[3] += positionWeights[i][j] * evalWeights[3]; // O(1)
+            opponentScores[currentMove][3] += cellWeight;
 
-        myScores[1] += countSequence(b, i, j, threatSequence[me.ordinal()]) * evalWeights[1]; // O(8K^2)
-        opponentScores[1] += countSequence(b, i, j, threatSequence[opponent.ordinal()]) * evalWeights[1]; // O(8K^2)
+        myScores[currentMove][1] = countSequence(b, i, j, threatSequence[me.ordinal()]) * evalWeights[1]
+                + myScores[currentMove - 1][1]; // O(8K^2)
+        opponentScores[currentMove][1] = countSequence(b, i, j, threatSequence[opponent.ordinal()]) * evalWeights[1]
+                + opponentScores[currentMove - 1][1]; // O(8K^2)
 
-        myScores[2] += countSequence(b, i, j, openEndSequence[me.ordinal()]) * evalWeights[2]; // O(8K^2)
-        opponentScores[2] += countSequence(b, i, j, openEndSequence[opponent.ordinal()]) * evalWeights[2]; // O(8K^2)
+        myScores[currentMove][2] = countSequence(b, i, j, openEndSequence[me.ordinal()]) * evalWeights[2]
+                + myScores[currentMove - 1][2]; // O(8K^2)
+        opponentScores[currentMove][2] = countSequence(b, i, j, openEndSequence[opponent.ordinal()]) * evalWeights[2]
+                + opponentScores[currentMove - 1][2]; // O(8K^2)
 
+    }
+
+    public void undoIncidence() {
+        currentMove -= 1;
+    }
+
+    // riparte dallo stato iniziale ovvero quello in posizione 0
+    public void resetStore() {
+        currentMove = 0;
+    }
+
+    // imposta l'ultimo stato come stato iniziale
+    public void rebaseStore() {
+        for (int i = 0; i < myScores[0].length; i++) {
+            myScores[0][i] = myScores[currentMove][i];
+            opponentScores[0][i] = opponentScores[currentMove][i];
+        }
+
+        resetStore();
     }
 
     private void printSequence(MNKCellState[][] seq) {
@@ -221,18 +253,29 @@ public class Evaluator {
 
         prova.markCell(5, 2);
         e.calculateIncidence(prova, 5, 2);
+
         prova.markCell(4, 6);
         e.calculateIncidence(prova, 4, 6);
 
-        for (int i = 0; i < e.myScores.length; i++) {
-            System.out.print(i + ": " + e.myScores[i] + " - " + e.opponentScores[i] + "\t");
+        e.undoIncidence();
+
+        for (int i = 0; i < e.myScores[0].length; i++) {
+            System.out.print(i + ": " + e.myScores[e.currentMove][i] + " - "
+                    + e.opponentScores[e.currentMove][i] + "\t");
         }
         System.out.println();
         int eval = 0;
-        for (int i = 0; i < e.myScores.length; i++) {
-            eval += e.myScores[i] - e.opponentScores[i];
+        for (int i = 0; i < e.myScores[0].length; i++) {
+            eval += e.myScores[e.currentMove][i] - e.opponentScores[e.currentMove][i];
         }
         System.out.println(eval);
+
+        // for (int i = 0; i < e.myScores.length; i++) {
+        // for (int j = 0; j < e.myScores[0].length; j++) {
+        // System.out.print(e.myScores[i][j] + "-" + e.opponentScores[i][j] + "\t");
+        // }
+        // System.out.println();
+        // }
     }
 
 }
