@@ -28,6 +28,7 @@ public class NostroPlayer implements MNKPlayer {
 	private MNKCellState[][] openEndSequence;
 	private MNKCellState[][] threatSequence;
 	private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
+	private Evaluator evaluator;
 
 	private int gameStateCounter, numMosse; // debug variables
 
@@ -56,6 +57,8 @@ public class NostroPlayer implements MNKPlayer {
 		pesi[MNKGameState.DRAW.ordinal()] = 0;
 		pesi[yourWin.ordinal()] = -1;
 
+		evaluator = new Evaluator(M, N, K, first);
+
 		// debug variables
 		gameStateCounter = 0;
 		numMosse = 0;
@@ -73,6 +76,15 @@ public class NostroPlayer implements MNKPlayer {
 		// System.out.println();
 		// }
 
+		// MNKBoard prova = new MNKBoard(7, 7, 3);
+		// prova.markCell(1, 3);
+		// prova.markCell(4, 1);
+		// prova.markCell(1, 4);
+		// prova.markCell(5, 2);
+		// // prova.markCell(4, 6);
+
+		// System.out.println("\n" + eval(prova));
+
 	}
 
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -86,10 +98,13 @@ public class NostroPlayer implements MNKPlayer {
 		if (MC.length > 0) {
 			MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
 			B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
+			evaluator.calculateIncidence(B, c.i, c.j);
 		}
 		// If there is just one possible move, return immediately
 		if (FC.length == 1)
 			return FC[0];
+
+		evaluator.rebaseStore();
 
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 
@@ -97,6 +112,7 @@ public class NostroPlayer implements MNKPlayer {
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
 			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+			evaluator.resetStore();
 			// if the time is over stop the loop and the best move is the previous one
 			if (timedOut)
 				break;
@@ -114,6 +130,7 @@ public class NostroPlayer implements MNKPlayer {
 
 		System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
+		evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
 
@@ -141,12 +158,13 @@ public class NostroPlayer implements MNKPlayer {
 		if (result != MNKGameState.OPEN || depth == 0) {
 			if (depth <= 0)
 				isTreeCompleted = false;
-			int ev = eval(b), prev_ev = previous_eval(b);
+			int ev = eval(b), prev_ev = 0/* previous_eval(b) */;
 
 			if (ev != prev_ev) {
-				System.err.println(
-						"Errore funzione di valutazione diverge\n" + b.getMarkedCells()[0] + " " + b.gameState() + " "
-								+ prev_ev + "\n");
+				// System.err.println(
+				// "Errore funzione di valutazione diverge\n" + b.getMarkedCells()[0] + " " +
+				// b.gameState() + " "
+				// + prev_ev + " vs " + ev + "\n");
 			}
 			return ev;
 		}
@@ -160,8 +178,10 @@ public class NostroPlayer implements MNKPlayer {
 				}
 
 				b.markCell(c.i, c.j);
+				evaluator.calculateIncidence(b, c.i, c.j);
 				int score = alphabeta(b, depth - 1, alpha, beta, false);
 				b.unmarkCell();
+				evaluator.undoIncidence();
 
 				if (score > bestScore) {
 					bestScore = score;
@@ -181,8 +201,10 @@ public class NostroPlayer implements MNKPlayer {
 					return bestScore;
 				}
 				b.markCell(c.i, c.j);
+				evaluator.calculateIncidence(b, c.i, c.j);
 				int score = alphabeta(b, depth - 1, alpha, beta, true);
 				b.unmarkCell();
+				evaluator.undoIncidence();
 
 				if (score < bestScore) {
 					bestScore = score;
@@ -215,26 +237,31 @@ public class NostroPlayer implements MNKPlayer {
 			aiScores[0] = 1;
 		if (b.gameState() == yourWin)
 			humanScores[0] = 1;
+		// aiScores[0] = evalWins(b, true);
+		// humanScores[0] = evalWins(b, false);
 
-		aiScores[1] = evalThreats(b, true);
-		humanScores[1] = evalThreats(b, false);
+		// aiScores[1] = evalThreats(b, true);
+		// humanScores[1] = evalThreats(b, false);
 
-		aiScores[2] = evalOpenEnds(b, true);
-		humanScores[2] = evalOpenEnds(b, false);
+		// aiScores[2] = evalOpenEnds(b, true);
+		// humanScores[2] = evalOpenEnds(b, false);
 
-		aiScores[3] = evalPositionWeights(b, true);
-		humanScores[3] = evalPositionWeights(b, false);
+		// aiScores[3] = evalPositionWeights(b, true);
+		// humanScores[3] = evalPositionWeights(b, false);
 
-		aiScores[4] = evalSevenTraps(b, true);
-		humanScores[4] = evalSevenTraps(b, false);
+		// aiScores[4] = evalSevenTraps(b, true);
+		// humanScores[4] = evalSevenTraps(b, false);
 
 		int finalScore = 0;
 
 		for (int i = 0; i < aiScores.length; i++) {
 			// if (b.gameState() == MNKGameState.OPEN)
-			// System.out.println(i + ": " + aiScores[i] + " - " + humanScores[i]);
+			// System.out.print(i + ": " + aiScores[i] * evalWeights[i] + " - " +
+			// humanScores[i] * evalWeights[i] + "\t");
 			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
 		}
+
+		finalScore += evaluator.eval();
 
 		// if (b.gameState() == MNKGameState.OPEN)
 		// System.out.println(finalScore);
@@ -266,8 +293,8 @@ public class NostroPlayer implements MNKPlayer {
 		aiScores[3] = evalPositionWeights(b, true);
 		humanScores[3] = evalPositionWeights(b, false);
 
-		aiScores[4] = evalSevenTraps(b, true);
-		humanScores[4] = evalSevenTraps(b, false);
+		// aiScores[4] = evalSevenTraps(b, true);
+		// humanScores[4] = evalSevenTraps(b, false);
 
 		int finalScore = 0;
 
@@ -437,7 +464,6 @@ public class NostroPlayer implements MNKPlayer {
 				threatSequence[i.ordinal()][j] = i;
 			}
 		}
-
 	}
 
 	private void debugMessage(boolean timeout) {

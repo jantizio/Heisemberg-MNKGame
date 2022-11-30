@@ -225,6 +225,14 @@ public class Evaluator {
         resetStore();
     }
 
+    public int eval() {
+        int eval = 0;
+        for (int i = 0; i < myScores[0].length; i++)
+            eval += myScores[currentMove][i] - opponentScores[currentMove][i];
+
+        return eval;
+    }
+
     private void printSequence(MNKCellState[][] seq) {
         for (MNKCellState[] mnkCellStates : seq) {
             for (MNKCellState s : mnkCellStates) {
