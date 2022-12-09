@@ -6,10 +6,12 @@ public class Evaluator {
     private int M, N, K;
     private MNKCellState me;
     private MNKCellState opponent;
+    private MNKGameState myWin;
+    private MNKGameState yourWin;
 
     private int[][] positionWeights;
-    private MNKCellState[][] openEndSequence;
-    private MNKCellState[][] threatSequence;
+    private MNKCellState[][] openEndSequence; // FREE P1 FREE FREE K=3
+    private MNKCellState[][] threatSequence; // FREE P1 P1 K=3
 
     private int currentMove;
     private int[][] myScores;
@@ -30,6 +32,8 @@ public class Evaluator {
             }
         }
         currentMove = 0;
+        myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
+        yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         me = first ? MNKCellState.P1 : MNKCellState.P2;
         opponent = first ? MNKCellState.P2 : MNKCellState.P1;
 
@@ -113,7 +117,8 @@ public class Evaluator {
             int revert) {
         int s = revert > 0 ? 0 : sequence.length - 1; // should i start the sequence from the beginning or the end?
 
-        if (!inBounds(i + directionI * (sequence.length - 1), j + directionJ * (sequence.length - 1)))
+        if (!inBounds(i, j)
+                || !inBounds(i + directionI * (sequence.length - 1), j + directionJ * (sequence.length - 1)))
             return false; // if a part of the sequence is outside the board, it's not worth checking
 
         for (int h = 0; h < sequence.length; h++) {
@@ -149,26 +154,27 @@ public class Evaluator {
      */
     private int countSequence(MNKBoard b, int i, int j, MNKCellState sequence[]) {
         int count = 0;
+        int k = sequence.length;
         // iteration number equal to 2K-1
-        for (int h = -(K - 1); h < K; h++) {
+        for (int h = -(k - 1); h < k; h++) {
             // forward check of the sequence
-            if (inBounds(i + h, j) && match(b, i + h, j, sequence, 1, 0, 1))
+            if (match(b, i + h, j, sequence, 1, 0, 1))
                 count += 1;
-            if (inBounds(i, j + h) && match(b, i, j + h, sequence, 0, 1, 1))
+            if (match(b, i, j + h, sequence, 0, 1, 1))
                 count += 1;
-            if (inBounds(i + h, j + h) && match(b, i + h, j + h, sequence, 1, 1, 1))
+            if (match(b, i + h, j + h, sequence, 1, 1, 1))
                 count += 1;
-            if (inBounds(i + h, j - h) && match(b, i + h, j - h, sequence, 1, -1, 1))
+            if (match(b, i + h, j - h, sequence, 1, -1, 1))
                 count += 1;
 
             // backwards check of the sequence
-            if (inBounds(i + h, j) && match(b, i + h, j, sequence, 1, 0, -1))
+            if (match(b, i + h, j, sequence, 1, 0, -1))
                 count += 1;
-            if (inBounds(i, j + h) && match(b, i, j + h, sequence, 0, 1, -1))
+            if (match(b, i, j + h, sequence, 0, 1, -1))
                 count += 1;
-            if (inBounds(i + h, j + h) && match(b, i + h, j + h, sequence, 1, 1, -1))
+            if (match(b, i + h, j + h, sequence, 1, 1, -1))
                 count += 1;
-            if (inBounds(i + h, j - h) && match(b, i + h, j - h, sequence, 1, -1, -1))
+            if (match(b, i + h, j - h, sequence, 1, -1, -1))
                 count += 1;
         }
         return count;
@@ -180,30 +186,47 @@ public class Evaluator {
      * @param b the board
      * @param i row coordinate
      * @param j column coordinate
-     * @implNote O(4*8K^2) ~ O(K^2)
+     * @implNote O(8*8K^2) ~ O(K^2)
      */
     public void calculateIncidence(MNKBoard b, int i, int j) {
         currentMove += 1;
 
+        // set the new sequence to score of the previous one
+        for (EvalType type : EvalType.values()) {
+            myScores[currentMove][type.ordinal()] = myScores[currentMove - 1][type.ordinal()];
+            opponentScores[currentMove][type.ordinal()] = opponentScores[currentMove - 1][type.ordinal()];
+        }
+
         // add the weight of the new cell
-        int cellWeight = positionWeights[i][j] * evalWeights[3]; // O(1)
-        myScores[currentMove][3] = myScores[currentMove - 1][3];
-        opponentScores[currentMove][3] = opponentScores[currentMove - 1][3];
+        int cellWeight = positionWeights[i][j] * evalWeights[EvalType.WEIGHT.ordinal()]; // O(1)
         if (b.cellState(i, j) == me)
-            myScores[currentMove][3] += cellWeight;
+            myScores[currentMove][EvalType.WEIGHT.ordinal()] += cellWeight;
         if (b.cellState(i, j) == opponent)
-            opponentScores[currentMove][3] += cellWeight;
+            opponentScores[currentMove][EvalType.WEIGHT.ordinal()] += cellWeight;
 
-        myScores[currentMove][1] = countSequence(b, i, j, threatSequence[me.ordinal()]) * evalWeights[1]
-                + myScores[currentMove - 1][1]; // O(8K^2)
-        opponentScores[currentMove][1] = countSequence(b, i, j, threatSequence[opponent.ordinal()]) * evalWeights[1]
-                + opponentScores[currentMove - 1][1]; // O(8K^2)
+        // adding new sequence
+        myScores[currentMove][EvalType.THREAT.ordinal()] += countSequence(b, i, j,
+                threatSequence[me.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
+        opponentScores[currentMove][EvalType.THREAT.ordinal()] += countSequence(b, i, j,
+                threatSequence[opponent.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
 
-        myScores[currentMove][2] = countSequence(b, i, j, openEndSequence[me.ordinal()]) * evalWeights[2]
-                + myScores[currentMove - 1][2]; // O(8K^2)
-        opponentScores[currentMove][2] = countSequence(b, i, j, openEndSequence[opponent.ordinal()]) * evalWeights[2]
-                + opponentScores[currentMove - 1][2]; // O(8K^2)
+        myScores[currentMove][EvalType.OPENEND.ordinal()] += countSequence(b, i, j,
+                openEndSequence[me.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
+        opponentScores[currentMove][EvalType.OPENEND.ordinal()] += countSequence(b, i, j,
+                openEndSequence[opponent.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
 
+        // subtracting blocked sequence
+        b.unmarkCell();
+        myScores[currentMove][EvalType.THREAT.ordinal()] -= countSequence(b, i, j,
+                threatSequence[me.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
+        opponentScores[currentMove][EvalType.THREAT.ordinal()] -= countSequence(b, i, j,
+                threatSequence[opponent.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
+
+        myScores[currentMove][EvalType.OPENEND.ordinal()] -= countSequence(b, i, j,
+                openEndSequence[me.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
+        opponentScores[currentMove][EvalType.OPENEND.ordinal()] -= countSequence(b, i, j,
+                openEndSequence[opponent.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
+        b.markCell(i, j);
     }
 
     public void undoIncidence() {
@@ -225,8 +248,14 @@ public class Evaluator {
         resetStore();
     }
 
-    public int eval() {
+    public int eval(MNKBoard b) {
         int eval = 0;
+
+        if (b.gameState() == myWin)
+            eval = evalWeights[EvalType.WIN.ordinal()];
+        if (b.gameState() == yourWin)
+            eval = -evalWeights[EvalType.WIN.ordinal()];
+
         for (int i = 0; i < myScores[0].length; i++)
             eval += myScores[currentMove][i] - opponentScores[currentMove][i];
 
@@ -268,7 +297,7 @@ public class Evaluator {
         e.undoIncidence();
 
         for (int i = 0; i < e.myScores[0].length; i++) {
-            System.out.print(i + ": " + e.myScores[e.currentMove][i] + " - "
+            System.out.print(EvalType.values()[i] + ": " + e.myScores[e.currentMove][i] + " - "
                     + e.opponentScores[e.currentMove][i] + "\t");
         }
         System.out.println();
