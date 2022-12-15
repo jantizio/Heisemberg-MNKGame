@@ -158,14 +158,15 @@ public class NostroPlayer implements MNKPlayer {
 		if (result != MNKGameState.OPEN || depth == 0) {
 			if (depth <= 0)
 				isTreeCompleted = false;
-			int ev = eval(b), prev_ev = 0/* previous_eval(b) */;
+			int ev = evaluator.eval(b), prev_ev = 0/* previous_eval(b) */;
 
-			if (ev != prev_ev) {
-				// System.err.println(
-				// "Errore funzione di valutazione diverge\n" + b.getMarkedCells()[0] + " " +
-				// b.gameState() + " "
-				// + prev_ev + " vs " + ev + "\n");
-			}
+			// if (ev != prev_ev) {
+			// MNKCell[] MC = b.getMarkedCells();
+			// System.err.println(
+			// "Errore funzione di valutazione diverge\n" + MC[MC.length - 1] + " " +
+			// b.gameState() + " " + prev_ev + " vs " + ev + "\n");
+			// printBoard(b);
+			// }
 			return ev;
 		}
 
@@ -220,6 +221,16 @@ public class NostroPlayer implements MNKPlayer {
 
 	}
 
+	private void printBoard(MNKBoard b) {
+		for (int i = 0; i < M; i++) {
+			for (int j = 0; j < N; j++) {
+				System.out.print(b.cellState(i, j) + "\t");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+
 	private int eval(MNKBoard b) {
 		// MNKGameState result = b.gameState();
 		// MNKCell FC[] = b.getFreeCells();
@@ -261,7 +272,7 @@ public class NostroPlayer implements MNKPlayer {
 			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
 		}
 
-		finalScore += evaluator.eval();
+		finalScore += evaluator.eval(b);
 
 		// if (b.gameState() == MNKGameState.OPEN)
 		// System.out.println(finalScore);
