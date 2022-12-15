@@ -69,10 +69,6 @@ public class BoardEnhanced2
         return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
     }
 
-    private boolean inBounds(int p) {
-        return ((0 <= p) && (p < M * N)) ? true : false;
-    }
-
     public void printMatrix() {
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) System.out.printf("%-4s : %-3d", nodesBoard[i][j].getItem().state, nodesBoard[i][j].getItem().getWeight());
