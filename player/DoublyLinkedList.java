@@ -34,6 +34,7 @@ public class DoublyLinkedList
     static void delNode(DoublyLinkedNode node)
     {
         if(node.getItem()==null) return;
+        if(node.getNext()==null || node.getPrev()==null) return;
         node.getPrev().setNext(node.getNext());
         node.getNext().setPrev(node.getPrev());
         node.setNext(null);

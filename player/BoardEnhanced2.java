@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
+import mnkgame.MNKCellState;
 
 public class BoardEnhanced2
 {
@@ -46,7 +47,7 @@ public class BoardEnhanced2
                         int weight=d * (K - k + 1);
                         DoublyLinkedList.delNode(nodesBoard[i1][j1]);
                         this.nodesBoard[i1][j1].getItem().addWeight(weight);
-                        this.weightArray[this.nodesBoard[i1][j1].getItem().getWeight()].addNode(this.nodesBoard[i1][j1]);
+                        if(this.nodesBoard[i1][j1].getItem().state==MNKCellState.FREE) this.weightArray[this.nodesBoard[i1][j1].getItem().getWeight()].addNode(this.nodesBoard[i1][j1]);
                     }
                 }
             }
@@ -55,13 +56,17 @@ public class BoardEnhanced2
 
     public void unmarkCell(int i, int j) {
         mnkboard.unmarkCell();
-        nodesBoard[i][j].getItem().state = mnkboard.cellState(i, j);
+        DoublyLinkedNode node=nodesBoard[i][j];
+        this.weightArray[node.getItem().getWeight()].addNode(node);
+        node.getItem().state = mnkboard.cellState(i, j);
         checkStar(i, j, -1);
     }
 
     public void markCell(int i, int j) {
         mnkboard.markCell(i, j);
-        nodesBoard[i][j].getItem().state = mnkboard.cellState(i, j);
+        DoublyLinkedNode node=nodesBoard[i][j];
+        DoublyLinkedList.delNode(node);
+        node.getItem().state = mnkboard.cellState(i, j);
         checkStar(i, j, 1);
     }
 
@@ -77,15 +82,14 @@ public class BoardEnhanced2
     }
 
     public CellEnhanced[] getMoveOrder() {
-        CellEnhanced temp[]=new CellEnhanced[M*N];
-        int c=M*N-1;
-        for (int i = 0; i < this.weightArray.length; i++) {
+        CellEnhanced temp[]=new CellEnhanced[M*N-this.mnkboard.getMarkedCells().length];
+        int c=0;
+        for (int i = this.weightArray.length-1; i >= 0 ; i--) {
             if(this.weightArray[i].isEmpty()) continue;
             DoublyLinkedNode nodo=this.weightArray[i].getNextIteration(true);
             do
             {
-                temp[c]=nodo.getItem();
-                c--;
+                temp[c++]=nodo.getItem();
                 nodo=this.weightArray[i].getNextIteration(false);
             } while(nodo!=null && nodo.getItem()!=null);
         }
