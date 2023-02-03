@@ -122,7 +122,7 @@ public class NostroPlayer implements MNKPlayer {
 	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
 		MNKCell lastMove = MC[MC.length - 1];
 		int totalPos = 8;
-		int matrix[][] = {
+		int matrAroundPos[][] = {
 			{-1, -1},
 			{0, -1},
 			{1, -1},
@@ -132,8 +132,7 @@ public class NostroPlayer implements MNKPlayer {
 			{0, 1},
 			{1, 1}
 		};
-
-		int matr_direction[][] = {
+		int matrDirectionAround[][] = {
 			{1, 1},
 			{0, 1},
 			{-1, 1},
@@ -143,21 +142,26 @@ public class NostroPlayer implements MNKPlayer {
 			{0, -1},
 			{-1, -1}
 		};
-		if(MC.length == 0){
-			//da capire come metterci una cella nel mezzo
-		}else if(MC.length == 1){
-			//da capire
-		}else{
-			MNKCellState cell[] = new MNKCellState[K];
-			cell[0] = cell[K-1] = MNKCellState.FREE;
-			for (int i = 1; i < cell.length - 1; i++) {
-				cell[i] = opponent;
-			}
-
+		//case first: take one of the central cells
+		if(MC.length == 0)
+			return new MNKCell(Math.ceilDiv(M, 2)-1, Math.ceilDiv(N, 2)-1);
+		//case second: take one of the central cells or near to the center if, the center one is taken
+		if(MC.length == 1)
+		{
+			int temp_m=Math.ceilDiv(M, 2), temp_n=Math.ceilDiv(N, 2);
+			if(B.cellState(temp_m-1,temp_n-1)==MNKCellState.FREE) return new MNKCell(temp_m-1, temp_n-1);
+			return new MNKCell(temp_m, temp_n);
+		}
+		//middle game cases
+		else{
+			//case near to lost: FREE [k-2 opponent] FREE
+			MNKCellState opponentSequence[] = new MNKCellState[K];
+			opponentSequence[0] = opponentSequence[K-1] = MNKCellState.FREE;
+			for (int i = 1; i < opponentSequence.length - 1; i++)
+				opponentSequence[i] = opponent;
 			for (int i = 0; i < totalPos; i++) {
-				if(match(B, lastMove.j + matrix[i][0], lastMove.i + matrix[i][1], cell, matr_direction[i][0], matr_direction[i][1], 1)){
-					//return new MNKCell(i, 0); 
-				}
+				if(match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]); 
 			}
 		}
 
