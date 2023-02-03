@@ -3,6 +3,8 @@ package player;
 import mnkgame.*;
 import java.util.Random;
 
+import javax.lang.model.util.ElementScanner6;
+
 public class NostroPlayer implements MNKPlayer {
 	private Random rand;
 	private MNKBoard B;
@@ -115,6 +117,51 @@ public class NostroPlayer implements MNKPlayer {
 		System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
+	}
+
+	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
+		MNKCell lastMove = MC[MC.length - 1];
+		int totalPos = 8;
+		int matrix[][] = {
+			{-1, -1},
+			{0, -1},
+			{1, -1},
+			{-1, 0},
+			{1, 0},
+			{-1, 1},
+			{0, 1},
+			{1, 1}
+		};
+
+		int matr_direction[][] = {
+			{1, 1},
+			{0, 1},
+			{-1, 1},
+			{1, 0},
+			{-1, 0},
+			{1, -1},
+			{0, -1},
+			{-1, -1}
+		};
+		if(MC.length == 0){
+			//da capire come metterci una cella nel mezzo
+		}else if(MC.length == 1){
+			//da capire
+		}else{
+			MNKCellState cell[] = new MNKCellState[K];
+			cell[0] = cell[K-1] = MNKCellState.FREE;
+			for (int i = 1; i < cell.length - 1; i++) {
+				cell[i] = opponent;
+			}
+
+			for (int i = 0; i < totalPos; i++) {
+				if(match(B, lastMove.j + matrix[i][0], lastMove.i + matrix[i][1], cell, matr_direction[i][0], matr_direction[i][1], 1)){
+					//return new MNKCell(i, 0); 
+				}
+			}
+		}
+
+		return MC[0];
 	}
 
 	public String playerName() {
