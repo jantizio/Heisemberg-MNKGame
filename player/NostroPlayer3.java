@@ -106,7 +106,7 @@ public class NostroPlayer3 implements MNKPlayer {
 			// }
 
 			// B.markCell(x, y);
-			B.markCell((int) Math.ceil(M / 2) - 1, (int) Math.ceil(N / 2) - 1);
+			B.markCell((M - 1) / 2, (N - 1) / 2);
 			return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
 
 		}
