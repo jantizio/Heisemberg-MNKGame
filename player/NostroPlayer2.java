@@ -8,7 +8,7 @@ import java.util.Random;
 public class NostroPlayer2 implements MNKPlayer {
 	private Random rand;
 	// private MNKBoard B;
-	private BoardEnhanced2 BE;
+	private BoardEnhanced BE;
 	private MNKGameState myWin;
 	private MNKGameState yourWin;
 	private MNKCellState me;
@@ -44,7 +44,7 @@ public class NostroPlayer2 implements MNKPlayer {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
 		// B = new MNKBoard(M, N, K);
-		BE = new BoardEnhanced2(M, N, K);
+		BE = new BoardEnhanced(M, N, K);
 		myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
 		yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 		me = first ? MNKCellState.P1 : MNKCellState.P2;
@@ -140,7 +140,7 @@ public class NostroPlayer2 implements MNKPlayer {
 	 * @param isMaximazing whether the current player is the min or max player
 	 * @return the score of the given board
 	 */
-	private int alphabeta(BoardEnhanced2 b, int depth, int alpha, int beta, boolean isMaximazing) {
+	private int alphabeta(BoardEnhanced b, int depth, int alpha, int beta, boolean isMaximazing) {
 		gameStateCounter += 1;
 		MNKGameState result = b.mnkboard.gameState();
 		// b.printMatrix();
@@ -154,11 +154,12 @@ public class NostroPlayer2 implements MNKPlayer {
 			// System.out.println("^ questa board vale: " + val + "\n\n");
 			return val;
 		}
-		// CellEnhanced moves[] = b.getMoveOrder();
+		CellEnhanced moves[] = b.getMoveOrder();
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
-			CellEnhanced c = b.nextCell(true);
-			while (c != null) {
+			for (CellEnhanced c : moves) {
+				if (c.state != MNKCellState.FREE)
+					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
@@ -180,12 +181,10 @@ public class NostroPlayer2 implements MNKPlayer {
 				if (alpha >= beta)
 					break;
 
-				c = b.nextCell(false);
 			}
 		} else {
 			bestScore = Integer.MAX_VALUE;
-			CellEnhanced c = b.nextCell(true);
-			while (c != null) {
+			for (CellEnhanced c : moves) {
 				if (c.state != MNKCellState.FREE)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
@@ -207,8 +206,6 @@ public class NostroPlayer2 implements MNKPlayer {
 				// cutoff" : " no cutoff"));
 				if (alpha >= beta)
 					break;
-
-				c = b.nextCell(false);
 			}
 		}
 		return bestScore;
