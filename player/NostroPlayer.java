@@ -1,6 +1,8 @@
 package player;
 
 import mnkgame.*;
+
+import java.time.YearMonth;
 import java.util.Random;
 
 import javax.lang.model.util.ElementScanner6;
@@ -96,6 +98,7 @@ public class NostroPlayer implements MNKPlayer {
 
 	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
 		MNKCell lastMove = MC[MC.length - 1];
+		MNKCell MyLastMove = MC[MC.length - 2];
 		int totalPos = 8;
 		int matrAroundPos[][] = {
 			{-1, -1},
@@ -117,6 +120,7 @@ public class NostroPlayer implements MNKPlayer {
 			{0, -1},
 			{-1, -1}
 		};
+
 		int centerI = (M-1)/2, centerJ = (N-1)/2;
 		//case first: take one of the central cells
 		if(MC.length == 0)
@@ -127,8 +131,40 @@ public class NostroPlayer implements MNKPlayer {
 			if(B.cellState(centerI-1,centerJ-1)==MNKCellState.FREE) return new MNKCell(centerI-1, centerJ-1);
 			return new MNKCell(centerI, centerJ);
 		}
+		//case third: 
+		if(MC.length <= 3)
+		{
+			for (int di = -1; di <= 1; di++) {
+				for (int dj = -1; dj <= 1; dj++) {
+					if (di == 0 && dj == 0)	//case cell c
+						continue;
+					if (!inBounds(MyLastMove.i + di, MyLastMove.j + dj))	//case out of bound
+						continue;
+					if (B.cellState(MyLastMove.i + di, MyLastMove.j + dj) == MNKCellState.FREE)
+						return new MNKCell(di + MyLastMove.i, dj + MyLastMove.j);
+				}
+			}
+		}
 		//middle game cases
 		else{
+			//One more move to my win 
+			for(MNKCell d : FC) {
+				if(B.markCell(d.i,d.j) == evaluator.myWin) {
+					return d;  
+				} else {
+					B.unmarkCell();
+				}
+			}
+
+			//One more move to opponent win 
+			for(MNKCell d : FC) {
+				if(B.markCell(d.i,d.j) == evaluator.yourWin) {
+					return d;  
+				} else {
+					B.unmarkCell();
+				}
+			}
+
 			//case near to lost: FREE [k-2 opponent] FREE
 			MNKCellState opponentSequence[] = new MNKCellState[K];
 			opponentSequence[0] = opponentSequence[K-1] = MNKCellState.FREE;
@@ -138,10 +174,50 @@ public class NostroPlayer implements MNKPlayer {
 				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
 					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]); 
 			}
+
+			//case near to win: FREE [k-2 opponent] FREE
+			MNKCellState myPlayerSequence[] = new MNKCellState[K];
+			myPlayerSequence[0] = myPlayerSequence[K-1] = MNKCellState.FREE;
+			for (int i = 1; i < myPlayerSequence.length - 1; i++)
+				myPlayerSequence[i] = evaluator.me;
+			for (int i = 0; i < totalPos; i++) {
+				if(evaluator.match(B, MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1], myPlayerSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1]); 
+			}
+			
+			//Continue the sequence
+			for (int i = MC.length - 2; i >= 0; i-=2) {
+				for (int di = -1; di <= 1; di++) {
+					for (int dj = -1; dj <= 1; dj++) {
+						if (di == 0 && dj == 0)	//case cell c
+							continue;
+						if (!inBounds(MC[i].i + di, MC[i].j + dj))	//case out of bound
+							continue;
+						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me){
+							if (!inBounds(MC[i].i - di, MC[i].j - dj))
+								continue;
+							if(B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
+								return MC[i];
+						}
+					}
+				}
+			}
 		}
 
-		return MC[0];
+		return FC[rand.nextInt(FC.length - 1)];
 	}
+
+	/**
+     * is in the bounds of the board
+     * 
+     * @param x pos x.
+     * @param y pos y.
+     * @return true if is in the bound, false if else.
+     * @implNote cost: O(1).
+     */
+    private boolean inBounds(int x, int y) {
+        return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
+    }
 
 	public String playerName() {
 		return "TicTacToe PRO"; // TODO: scegliere un nome
