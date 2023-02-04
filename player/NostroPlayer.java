@@ -64,11 +64,10 @@ public class NostroPlayer implements MNKPlayer {
 		// If there is just one possible move, return immediately
 		if (FC.length == 1)
 			return FC[0];
-
+		//return bigSelect(B.getFreeCells(), B.getMarkedCells());
 		evaluator.rebaseStore();
-
+		
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
-
 		// iterative deepening search
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
@@ -97,8 +96,6 @@ public class NostroPlayer implements MNKPlayer {
 	}
 
 	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
-		MNKCell lastMove = MC[MC.length - 1];
-		MNKCell MyLastMove = MC[MC.length - 2];
 		int totalPos = 8;
 		int matrAroundPos[][] = {
 			{-1, -1},
@@ -131,6 +128,9 @@ public class NostroPlayer implements MNKPlayer {
 			if(B.cellState(centerI-1,centerJ-1)==MNKCellState.FREE) return new MNKCell(centerI-1, centerJ-1);
 			return new MNKCell(centerI, centerJ);
 		}
+
+		MNKCell lastMove = MC[MC.length - 1];
+		MNKCell MyLastMove = MC[MC.length - 2];
 		//case third: 
 		if(MC.length <= 3)
 		{
@@ -157,9 +157,17 @@ public class NostroPlayer implements MNKPlayer {
 			}
 
 			//One more move to opponent win 
-			for(MNKCell d : FC) {
-				if(B.markCell(d.i,d.j) == evaluator.yourWin) {
-					return d;  
+			MNKCell c = FC[rand.nextInt(FC.length)];
+			B.markCell(c.i, c.j);
+			for (MNKCell d : FC) {
+				if (d == c) {
+					continue;
+				}
+				if (B.markCell(d.i, d.j) == evaluator.yourWin) {
+					B.unmarkCell();
+					B.unmarkCell();
+					B.markCell(d.i, d.j);
+					return d;
 				} else {
 					B.unmarkCell();
 				}
