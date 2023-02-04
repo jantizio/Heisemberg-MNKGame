@@ -8,12 +8,9 @@ import javax.lang.model.util.ElementScanner6;
 public class NostroPlayer implements MNKPlayer {
 	private Random rand;
 	private MNKBoard B;
-	private MNKGameState myWin;
-	private MNKGameState yourWin;
 	private int TIMEOUT;
 	private int M, N, K;
 
-	private int pesi[];
 	private MNKCell bestMove;
 	private MNKCell globalBestMove;
 	private long timerStart;
@@ -36,20 +33,13 @@ public class NostroPlayer implements MNKPlayer {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
 		B = new MNKBoard(M, N, K);
-		myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
-		yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
+		evaluator = new Evaluator(M, N, K, first);
 		TIMEOUT = timeout_in_secs;
 		this.M = M;
 		this.N = N;
 		this.K = K;
 		isTreeCompleted = true;
 
-		pesi = new int[MNKGameState.WINP2.ordinal() + 1];
-		pesi[myWin.ordinal()] = 1;
-		pesi[MNKGameState.DRAW.ordinal()] = 0;
-		pesi[yourWin.ordinal()] = -1;
-
-		evaluator = new Evaluator(M, N, K, first);
 
 		// debug variables
 		gameStateCounter = 0;
@@ -127,15 +117,15 @@ public class NostroPlayer implements MNKPlayer {
 			{0, -1},
 			{-1, -1}
 		};
+		int centerI = (M-1)/2, centerJ = (N-1)/2;
 		//case first: take one of the central cells
 		if(MC.length == 0)
-			return new MNKCell(Math.ceilDiv(M, 2)-1, Math.ceilDiv(N, 2)-1);
+			return new MNKCell(centerI, centerJ);
 		//case second: take one of the central cells or near to the center if, the center one is taken
 		if(MC.length == 1)
 		{
-			int temp_m=Math.ceilDiv(M, 2), temp_n=Math.ceilDiv(N, 2);
-			if(B.cellState(temp_m-1,temp_n-1)==MNKCellState.FREE) return new MNKCell(temp_m-1, temp_n-1);
-			return new MNKCell(temp_m, temp_n);
+			if(B.cellState(centerI-1,centerJ-1)==MNKCellState.FREE) return new MNKCell(centerI-1, centerJ-1);
+			return new MNKCell(centerI, centerJ);
 		}
 		//middle game cases
 		else{
@@ -143,9 +133,9 @@ public class NostroPlayer implements MNKPlayer {
 			MNKCellState opponentSequence[] = new MNKCellState[K];
 			opponentSequence[0] = opponentSequence[K-1] = MNKCellState.FREE;
 			for (int i = 1; i < opponentSequence.length - 1; i++)
-				opponentSequence[i] = opponent;
+				opponentSequence[i] = evaluator.opponent;
 			for (int i = 0; i < totalPos; i++) {
-				if(match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
 					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]); 
 			}
 		}

@@ -4,10 +4,10 @@ import mnkgame.*;
 
 public class Evaluator {
     private int M, N, K;
-    private MNKCellState me;
-    private MNKCellState opponent;
-    private MNKGameState myWin;
-    private MNKGameState yourWin;
+    public MNKCellState me;
+    public MNKCellState opponent;
+    public MNKGameState myWin;
+    public MNKGameState yourWin;
 
     private int[][] positionWeights;
     private MNKCellState[][] openEndSequence; // FREE P1 P1 FREE FREE K=4
@@ -113,7 +113,7 @@ public class Evaluator {
      * @return true if is thera a sequence, false if else.
      * @implNote cost: O(|sequence|) = O(K).
      */
-    private boolean match(MNKBoard board, int i, int j, MNKCellState[] sequence, int directionI, int directionJ,
+    public boolean match(MNKBoard board, int i, int j, MNKCellState[] sequence, int directionI, int directionJ,
             int revert) {
         int s = revert > 0 ? 0 : sequence.length - 1; // should i start the sequence from the beginning or the end?
 
