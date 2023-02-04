@@ -93,7 +93,7 @@ public class NostroPlayer3 implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-		int x = 0, y = 0, max = -1;
+		//int x = 0, y = 0, max = -1;
 		if (FC.length == M * N) {
 			// for (int i = 0; i < M; i++) {
 			// for (int j = 0; j < N; j++) {
@@ -524,12 +524,16 @@ public class NostroPlayer3 implements MNKPlayer {
 	private boolean asAdjacent(MNKBoard b, MNKCell c) {
 		for (int di = -2; di <= 2; di++) {
 			for (int dj = -2; dj <= 2; dj++) {
-				if (di == 0 && dj == 0 || !inBounds(c.i + di, c.j + dj))
+				if (di == 0 && dj == 0)	//case cell c
 					continue;
-				if (b.cellState(c.i + di, c.j + dj) != MNKCellState.FREE)
+				if (!inBounds(c.i + di, c.j + dj))	//case out of bound
+					continue;
+				if((Math.abs(di)==2 && Math.abs(dj)==1)||(Math.abs(di)==1 && Math.abs(dj)==2))	//case cell not aligned
+					continue;
+				if (b.cellState(c.i + di, c.j + dj) != MNKCellState.FREE)	//case cell is adjacent
 					return true;
 			}
 		}
-		return false;
+		return false;	//case cell isn't adjacent
 	}
 }
