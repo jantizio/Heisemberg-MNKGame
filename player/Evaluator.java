@@ -10,21 +10,21 @@ public class Evaluator {
     private MNKGameState yourWin;
 
     private int[][] positionWeights;
-    private MNKCellState[][] openEndSequence; // FREE P1 FREE FREE K=3
-    private MNKCellState[][] threatSequence; // FREE P1 P1 K=3
+    private MNKCellState[][] openEndSequence; // FREE P1 P1 FREE FREE K=4
+    private MNKCellState[][] threatSequence; // FREE P1 P1 P1 K=4
 
     private int currentMove;
     private int[][] myScores;
     private int[][] opponentScores;
-    private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
+    public final int[] evalWeights = { 1000000, 100, 10, 15 };
 
     public Evaluator(int m, int n, int k, boolean first) {
         M = m;
         N = n;
         K = k;
 
-        myScores = new int[20][5];
-        opponentScores = new int[20][5];
+        myScores = new int[20][EvalType.values().length];
+        opponentScores = new int[20][EvalType.values().length];
         for (int i = 0; i < myScores.length; i++) {
             for (int j = 0; j < myScores[0].length; j++) {
                 myScores[i][j] = 0;
@@ -79,7 +79,7 @@ public class Evaluator {
     }
 
     private void createOpenEndSequence() {
-        openEndSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K + 1];
+        openEndSequence = new MNKCellState[MNKCellState.values().length][K + 1];
         for (MNKCellState i : MNKCellState.values()) {
             openEndSequence[i.ordinal()][0] = MNKCellState.FREE;
             for (int j = 1; j < K - 1; j++) {
@@ -91,7 +91,7 @@ public class Evaluator {
     }
 
     private void createThreatSequence() {
-        threatSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
+        threatSequence = new MNKCellState[MNKCellState.values().length][K];
         for (MNKCellState i : MNKCellState.values()) {
             threatSequence[i.ordinal()][0] = MNKCellState.FREE;
             for (int j = 1; j < K; j++) {
@@ -132,7 +132,7 @@ public class Evaluator {
     }
 
     /**
-     * is in the bounds on the board
+     * is in the bounds of the board
      * 
      * @param x pos x.
      * @param y pos y.
@@ -140,7 +140,7 @@ public class Evaluator {
      * @implNote cost: O(1).
      */
     private boolean inBounds(int x, int y) {
-        return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
+        return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
     }
 
     /**
@@ -155,26 +155,23 @@ public class Evaluator {
     private int countSequence(MNKBoard b, int i, int j, MNKCellState sequence[]) {
         int count = 0;
         int k = sequence.length;
-        // iteration number equal to 2K-1
-        for (int h = -(k - 1); h < k; h++) {
-            // forward check of the sequence
-            if (match(b, i + h, j, sequence, 1, 0, 1))
+        for (int h = 0; h < k; h++) {
+            if (match(b, i, j - h, sequence, 0, 1, 1))
                 count += 1;
-            if (match(b, i, j + h, sequence, 0, 1, 1))
+            if (match(b, i - h, j, sequence, 1, 0, 1))
                 count += 1;
-            if (match(b, i + h, j + h, sequence, 1, 1, 1))
+            if (match(b, i - h, j - h, sequence, 1, 1, 1))
                 count += 1;
-            if (match(b, i + h, j - h, sequence, 1, -1, 1))
+            if (match(b, i - h, j + h, sequence, 1, -1, 1))
                 count += 1;
 
-            // backwards check of the sequence
-            if (match(b, i + h, j, sequence, 1, 0, -1))
+            if (match(b, i, j - h, sequence, 0, 1, -1))
                 count += 1;
-            if (match(b, i, j + h, sequence, 0, 1, -1))
+            if (match(b, i - h, j, sequence, 1, 0, -1))
                 count += 1;
-            if (match(b, i + h, j + h, sequence, 1, 1, -1))
+            if (match(b, i - h, j - h, sequence, 1, 1, -1))
                 count += 1;
-            if (match(b, i + h, j - h, sequence, 1, -1, -1))
+            if (match(b, i - h, j + h, sequence, 1, -1, -1))
                 count += 1;
         }
         return count;
@@ -191,27 +188,29 @@ public class Evaluator {
     public void calculateIncidence(MNKBoard b, int i, int j) {
         currentMove += 1;
 
-        // set the new sequence to score of the previous one
+        // set the new sequence to the score of the previous one
         for (EvalType type : EvalType.values()) {
             myScores[currentMove][type.ordinal()] = myScores[currentMove - 1][type.ordinal()];
             opponentScores[currentMove][type.ordinal()] = opponentScores[currentMove - 1][type.ordinal()];
         }
 
+        MNKCellState lastMove = b.cellState(i, j);
+        // System.out.println(lastMove);
         // add the weight of the new cell
         int cellWeight = positionWeights[i][j] * evalWeights[EvalType.WEIGHT.ordinal()]; // O(1)
-        if (b.cellState(i, j) == me)
+        if (lastMove == me)
             myScores[currentMove][EvalType.WEIGHT.ordinal()] += cellWeight;
-        if (b.cellState(i, j) == opponent)
+        if (lastMove == opponent)
             opponentScores[currentMove][EvalType.WEIGHT.ordinal()] += cellWeight;
 
         // adding new sequence
-        myScores[currentMove][EvalType.THREAT.ordinal()] += countSequence(b, i, j,
-                threatSequence[me.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
+        myScores[currentMove][EvalType.THREAT.ordinal()] += countSequence(b, i, j, threatSequence[me.ordinal()])
+                * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
         opponentScores[currentMove][EvalType.THREAT.ordinal()] += countSequence(b, i, j,
                 threatSequence[opponent.ordinal()]) * evalWeights[EvalType.THREAT.ordinal()]; // O(8K^2)
 
-        myScores[currentMove][EvalType.OPENEND.ordinal()] += countSequence(b, i, j,
-                openEndSequence[me.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
+        myScores[currentMove][EvalType.OPENEND.ordinal()] += countSequence(b, i, j, openEndSequence[me.ordinal()])
+                * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
         opponentScores[currentMove][EvalType.OPENEND.ordinal()] += countSequence(b, i, j,
                 openEndSequence[opponent.ordinal()]) * evalWeights[EvalType.OPENEND.ordinal()]; // O(8K^2)
 
@@ -233,12 +232,17 @@ public class Evaluator {
         currentMove -= 1;
     }
 
-    // riparte dallo stato iniziale ovvero quello in posizione 0
+    /*
+     * restart the indexing of the store to the first element
+     * 
+     */
     public void resetStore() {
         currentMove = 0;
     }
 
-    // imposta l'ultimo stato come stato iniziale
+    /*
+     * sets the last board state as the initial one
+     */
     public void rebaseStore() {
         for (int i = 0; i < myScores[0].length; i++) {
             myScores[0][i] = myScores[currentMove][i];

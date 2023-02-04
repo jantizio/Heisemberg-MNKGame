@@ -4,6 +4,5 @@ public enum EvalType {
     WIN,
     THREAT,
     OPENEND,
-    WEIGHT,
-    TRAPS
+    WEIGHT
 }
