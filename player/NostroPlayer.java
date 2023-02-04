@@ -64,7 +64,15 @@ public class NostroPlayer implements MNKPlayer {
 		// If there is just one possible move, return immediately
 		if (FC.length == 1)
 			return FC[0];
-		//return bigSelect(B.getFreeCells(), B.getMarkedCells());
+		/*
+		TODO: capire perchè una cella già marcata risulta free
+		
+		MNKCell res=bigSelect(B.getFreeCells(), B.getMarkedCells());
+		System.out.println("Selected cell: ["+res.i+", "+res.j+"]");
+		B.markCell(res.i,res.j);
+		return res;
+		
+		*/
 		evaluator.rebaseStore();
 		
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
@@ -149,11 +157,10 @@ public class NostroPlayer implements MNKPlayer {
 		else{
 			//One more move to my win 
 			for(MNKCell d : FC) {
-				if(B.markCell(d.i,d.j) == evaluator.myWin) {
-					return d;  
-				} else {
+				if(B.markCell(d.i,d.j) == evaluator.myWin)
+					return d;
+				else
 					B.unmarkCell();
-				}
 			}
 
 			//One more move to opponent win 
@@ -211,7 +218,7 @@ public class NostroPlayer implements MNKPlayer {
 				}
 			}
 		}
-
+		
 		return FC[rand.nextInt(FC.length - 1)];
 	}
 
