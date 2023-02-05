@@ -1,19 +1,18 @@
 package player;
 
 import mnkgame.*;
+
+import java.time.YearMonth;
 import java.util.Random;
+
+import javax.lang.model.util.ElementScanner6;
 
 public class NostroPlayer implements MNKPlayer {
 	private Random rand;
 	private MNKBoard B;
-	private MNKGameState myWin;
-	private MNKGameState yourWin;
-	private MNKCellState me;
-	private MNKCellState opponent;
 	private int TIMEOUT;
 	private int M, N, K;
 
-	private int pesi[];
 	private MNKCell bestMove;
 	private MNKCell globalBestMove;
 	private long timerStart;
@@ -22,12 +21,7 @@ public class NostroPlayer implements MNKPlayer {
 	private boolean isTreeCompleted; // is true if the search completed the tree
 	private int currentDepth;
 
-	private int[][] positionWeights;
-	private MNKCellState[][] winSequence;
-	private MNKCellState[][] sevenTrapSequence;
-	private MNKCellState[][] openEndSequence;
-	private MNKCellState[][] threatSequence;
-	private final int[] evalWeights = { 1000000, 100, 10, 15, 20 };
+	private Evaluator evaluator;
 
 	private int gameStateCounter, numMosse, gameStateEvalued, gameStateSkipped; // debug variables
 
@@ -41,39 +35,19 @@ public class NostroPlayer implements MNKPlayer {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
 		B = new MNKBoard(M, N, K);
-		myWin = first ? MNKGameState.WINP1 : MNKGameState.WINP2;
-		yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
-		me = first ? MNKCellState.P1 : MNKCellState.P2;
-		opponent = first ? MNKCellState.P2 : MNKCellState.P1;
+		evaluator = new Evaluator(M, N, K, first);
 		TIMEOUT = timeout_in_secs;
 		this.M = M;
 		this.N = N;
 		this.K = K;
 		isTreeCompleted = true;
 
-		pesi = new int[MNKGameState.WINP2.ordinal() + 1];
-		pesi[myWin.ordinal()] = 1;
-		pesi[MNKGameState.DRAW.ordinal()] = 0;
-		pesi[yourWin.ordinal()] = -1;
 
 		// debug variables
 		gameStateCounter = 0;
 		numMosse = 0;
 		gameStateEvalued = 0;
 		gameStateSkipped = 0;
-
-		createPositionWeights();
-		createWinSequence();
-		createSevenTrapSequence();
-		createOpenEndSequence();
-		createThreatSequence();
-
-		// for (int i = 0; i < 3; i++) {
-		// for (int j = 0; j < K; j++) {
-		// System.out.print(sevenTrapSequence[i][j] + " ");
-		// }
-		// System.out.println();
-		// }
 
 		// B.markCell(9, 9);
 		// B.markCell(8, 8);
@@ -123,10 +97,12 @@ public class NostroPlayer implements MNKPlayer {
 		if (MC.length > 0) {
 			MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
 			B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
+			evaluator.calculateIncidence(B, c.i, c.j);
 		}
 		// If there is just one possible move, return immediately
 		if (FC.length == 1)
 			return FC[0];
+
 
 		int x = 0, y = 0, max = -1;
 		if (FC.length == M * N) {
@@ -146,32 +122,181 @@ public class NostroPlayer implements MNKPlayer {
 
 		}
 
-		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 
+		/*
+		TODO: capire perchè una cella già marcata risulta free
+		
+		MNKCell res=bigSelect(B.getFreeCells(), B.getMarkedCells());
+		System.out.println("Selected cell: ["+res.i+", "+res.j+"]");
+		B.markCell(res.i,res.j);
+		return res;
+		
+		*/
+		evaluator.rebaseStore();
+		
+
+		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 		// iterative deepening search
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
+
 			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true, true);
+			evaluator.resetStore();
+
 			// if the time is over stop the loop and the best move is the previous one
 			if (timedOut)
 				break;
 
 			globalBestMove = bestMove; // update the best move
 			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
+
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
-			if (isTreeCompleted || searchResult >= evalWeights[0] / 2)
+			if (isTreeCompleted || searchResult >= evaluator.evalWeights[0] / 2)
 				break;
 			isTreeCompleted = true; // if we are here then the flag was false,
 									// need to set to true for the next loop
 		}
 
+
 		// debugMessage(timedOut);
 		// System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
+		evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
+
+	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
+		int totalPos = 8;
+		int matrAroundPos[][] = {
+			{-1, -1},
+			{0, -1},
+			{1, -1},
+			{-1, 0},
+			{1, 0},
+			{-1, 1},
+			{0, 1},
+			{1, 1}
+		};
+		int matrDirectionAround[][] = {
+			{1, 1},
+			{0, 1},
+			{-1, 1},
+			{1, 0},
+			{-1, 0},
+			{1, -1},
+			{0, -1},
+			{-1, -1}
+		};
+
+		int centerI = (M-1)/2, centerJ = (N-1)/2;
+		//case first: take one of the central cells
+		if(MC.length == 0)
+			return new MNKCell(centerI, centerJ);
+		//case second: take one of the central cells or near to the center if, the center one is taken
+		if(MC.length == 1)
+		{
+			if(B.cellState(centerI-1,centerJ-1)==MNKCellState.FREE) return new MNKCell(centerI-1, centerJ-1);
+			return new MNKCell(centerI, centerJ);
+		}
+
+		MNKCell lastMove = MC[MC.length - 1];
+		MNKCell MyLastMove = MC[MC.length - 2];
+		//case third: 
+		if(MC.length <= 3)
+		{
+			for (int di = -1; di <= 1; di++) {
+				for (int dj = -1; dj <= 1; dj++) {
+					if (di == 0 && dj == 0)	//case cell c
+						continue;
+					if (!inBounds(MyLastMove.i + di, MyLastMove.j + dj))	//case out of bound
+						continue;
+					if (B.cellState(MyLastMove.i + di, MyLastMove.j + dj) == MNKCellState.FREE)
+						return new MNKCell(di + MyLastMove.i, dj + MyLastMove.j);
+				}
+			}
+		}
+		//middle game cases
+		else{
+			//One more move to my win 
+			for(MNKCell d : FC) {
+				if(B.markCell(d.i,d.j) == evaluator.myWin)
+					return d;
+				else
+					B.unmarkCell();
+			}
+
+			//One more move to opponent win 
+			MNKCell c = FC[rand.nextInt(FC.length)];
+			B.markCell(c.i, c.j);
+			for (MNKCell d : FC) {
+				if (d == c) {
+					continue;
+				}
+				if (B.markCell(d.i, d.j) == evaluator.yourWin) {
+					B.unmarkCell();
+					B.unmarkCell();
+					B.markCell(d.i, d.j);
+					return d;
+				} else {
+					B.unmarkCell();
+				}
+			}
+
+			//case near to lost: FREE [k-2 opponent] FREE
+			MNKCellState opponentSequence[] = new MNKCellState[K];
+			opponentSequence[0] = opponentSequence[K-1] = MNKCellState.FREE;
+			for (int i = 1; i < opponentSequence.length - 1; i++)
+				opponentSequence[i] = evaluator.opponent;
+			for (int i = 0; i < totalPos; i++) {
+				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]); 
+			}
+
+			//case near to win: FREE [k-2 opponent] FREE
+			MNKCellState myPlayerSequence[] = new MNKCellState[K];
+			myPlayerSequence[0] = myPlayerSequence[K-1] = MNKCellState.FREE;
+			for (int i = 1; i < myPlayerSequence.length - 1; i++)
+				myPlayerSequence[i] = evaluator.me;
+			for (int i = 0; i < totalPos; i++) {
+				if(evaluator.match(B, MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1], myPlayerSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1]); 
+			}
+			
+			//Continue the sequence
+			for (int i = MC.length - 2; i >= 0; i-=2) {
+				for (int di = -1; di <= 1; di++) {
+					for (int dj = -1; dj <= 1; dj++) {
+						if (di == 0 && dj == 0)	//case cell c
+							continue;
+						if (!inBounds(MC[i].i + di, MC[i].j + dj))	//case out of bound
+							continue;
+						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me){
+							if (!inBounds(MC[i].i - di, MC[i].j - dj))
+								continue;
+							if(B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
+								return MC[i];
+						}
+					}
+				}
+			}
+		}
+		
+		return FC[rand.nextInt(FC.length - 1)];
+	}
+
+	/**
+     * is in the bounds of the board
+     * 
+     * @param x pos x.
+     * @param y pos y.
+     * @return true if is in the bound, false if else.
+     * @implNote cost: O(1).
+     */
+    private boolean inBounds(int x, int y) {
+        return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
+    }
 
 	public String playerName() {
 		return "cutoff optimize"; // TODO: scegliere un nome
@@ -197,7 +322,7 @@ public class NostroPlayer implements MNKPlayer {
 		if (result != MNKGameState.OPEN || depth == 0) {
 			if (depth <= 0)
 				isTreeCompleted = false;
-			return eval(b);
+			return evaluator.eval(b);
 		}
 
 		if (isMaximazing) {
@@ -213,8 +338,12 @@ public class NostroPlayer implements MNKPlayer {
 				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
+				evaluator.calculateIncidence(b, c.i, c.j);
+        
 				int score = alphabeta(b, depth - 1, alpha, beta, false, false);
+        
 				b.unmarkCell();
+				evaluator.undoIncidence();
 
 				// if (depth == currentDepth) {
 				// System.out.println(c + " " + score);
@@ -246,8 +375,12 @@ public class NostroPlayer implements MNKPlayer {
 				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
+   			evaluator.calculateIncidence(b, c.i, c.j);
+        
 				int score = alphabeta(b, depth - 1, alpha, beta, true, false);
+
 				b.unmarkCell();
+				evaluator.undoIncidence();
 
 				// if (depth == currentDepth) {
 				// System.out.println(c + " " + score);
@@ -271,78 +404,6 @@ public class NostroPlayer implements MNKPlayer {
 
 	}
 
-	// provided two equal score moves returns the best
-	private MNKCell defineBestMove(MNKBoard b, MNKCell move1, MNKCell move2) {
-		int move1points = 0, move2points = 0;
-
-		for (int di = -1; di <= 1; di++) {
-			for (int dj = -1; dj <= 1; dj++) {
-				if (di == 0 && dj == 0)
-					continue;
-				if (!inBounds(move1.i + di, move1.j + dj))
-					continue;
-				if (b.cellState(move1.i + di, move1.j + dj) == opponent)
-					move1points += 10;
-				if (b.cellState(move1.i + di, move1.j + dj) == me)
-					move1points -= 10;
-			}
-		}
-
-		for (int di = -1; di <= 1; di++) {
-			for (int dj = -1; dj <= 1; dj++) {
-				if (di == 0 && dj == 0)
-					continue;
-				if (!inBounds(move2.i + di, move2.j + dj))
-					continue;
-				if (b.cellState(move2.i + di, move2.j + dj) == opponent)
-					move2points += 10;
-				if (b.cellState(move2.i + di, move2.j + dj) == me)
-					move2points -= 10;
-			}
-		}
-		return move1points > move2points ? move1 : move2;
-	}
-
-	private int eval(MNKBoard b) {
-		// MNKGameState result = b.gameState();
-		// MNKCell FC[] = b.getFreeCells();
-		// int count = 0;
-
-		// if (result != MNKGameState.OPEN)
-		// return pesi[result.ordinal()] * (1 + FC.length);
-		// TODO: forse è più efficiente fare (M*N-depth) al posto di FC.lenght?
-		// verificare se sono uguali in primo luogo
-
-		int[] aiScores = { 0, 0, 0, 0, 0 };
-		int[] humanScores = { 0, 0, 0, 0, 0 };
-
-		// if b.gameState() == WINP1 or WINP2 then valuta
-		aiScores[0] = evalWins(b, true);
-		humanScores[0] = evalWins(b, false);
-
-		aiScores[1] = evalThreats(b, true);
-		humanScores[1] = evalThreats(b, false);
-
-		aiScores[2] = evalOpenEnds(b, true);
-		humanScores[2] = evalOpenEnds(b, false);
-
-		aiScores[3] = evalPositionWeights(b, true);
-		humanScores[3] = evalPositionWeights(b, false);
-
-		// aiScores[4] = evalSevenTraps(b, true);
-		// humanScores[4] = evalSevenTraps(b, false);
-
-
-		int finalScore = 0;
-
-		for (int i = 0; i < aiScores.length; i++) {
-			// System.out.println(aiScores[i] + " - " + humanScores[i]);
-			finalScore += (evalWeights[i] * (aiScores[i] - humanScores[i]));
-		}
-
-		return finalScore;
-	}
-
 	/**
 	 * is in the bounds on the board, cost: O(1).
 	 * 
@@ -354,154 +415,25 @@ public class NostroPlayer implements MNKPlayer {
 		return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
 	}
 
-	private int evalPositionWeights(MNKBoard b, boolean isAi) {
-		// int player = (isAi) ? aiPosition : humanPosition;
-		MNKCellState player = (isAi) ? me : opponent;
-		int score = 0;
-
 		for (int i = 0; i < M; i++) {
 			for (int j = 0; j < N; j++) {
-				if (b.cellState(i, j) == player) {
-					score += positionWeights[i][j];
+				switch (b.cellState(i, j)) {
+					case P1:
+						System.out.print("X ");
+						break;
+					case P2:
+						System.out.print("O ");
+						break;
+					case FREE:
+						System.out.print("# ");
+						break;
+					default:
+						break;
 				}
 			}
+			System.out.println();
 		}
-
-		return score;
-	}
-
-	private void createPositionWeights() {
-		positionWeights = new int[M][N];
-
-		for (int i = 0; i < M; i++) {
-			for (int j = 0; j < N; j++) {
-				if (inBounds(i + (K - 1), j)) {
-					for (int l = 0; l < K; l++) {
-						positionWeights[i + l][j]++;
-					}
-				}
-
-				if (inBounds(i, j + (K - 1))) {
-					for (int l = 0; l < K; l++) {
-						positionWeights[i][j + l]++;
-					}
-				}
-
-				if (inBounds(i + (K - 1), j + (K - 1))) {
-					for (int l = 0; l < K; l++) {
-						positionWeights[i + l][j + l]++;
-					}
-				}
-
-				if (inBounds(i + (K - 1), j - (K - 1))) {
-					for (int l = 0; l < K; l++) {
-						positionWeights[i + l][j - l]++;
-					}
-				}
-			}
-		}
-	}
-
-	private int evalWins(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-		return countPositionForward(state, winSequence[player.ordinal()]);
-	}
-
-	private void createWinSequence() {
-		winSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
-
-		for (MNKCellState i : MNKCellState.values()) {
-			for (int j = 0; j < K; j++) {
-				winSequence[i.ordinal()][j] = i;
-			}
-		}
-	}
-
-	private int evalSevenTraps(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-
-		int sevenTraps = 0;
-
-		for (int i = 0; i < M; i++) {
-			for (int j = 0; j < N - 1; j++) {
-				if (match(state, i, j, sevenTrapSequence[player.ordinal()], -1, 0, 1)) {
-					if (match(state, i, j + 1, sevenTrapSequence[player.ordinal()], -1, -1, 1)) {
-						sevenTraps++;
-					}
-				}
-
-				if (match(state, i, j, sevenTrapSequence[player.ordinal()], 1, 0, 1)) {
-					if (match(state, i, j + 1, sevenTrapSequence[player.ordinal()], 1, -1, 1)) {
-						sevenTraps++;
-					}
-				}
-			}
-		}
-
-		for (int i = 0; i < M; i++) {
-			for (int j = 1; j < N; j++) {
-				if (match(state, i, j, sevenTrapSequence[player.ordinal()], -1, 0, 1)) {
-					if (match(state, i, j - 1, sevenTrapSequence[player.ordinal()], -1, 1, 1)) {
-						sevenTraps++;
-					}
-				}
-
-				if (match(state, i, j, sevenTrapSequence[player.ordinal()], 1, 0, 1)) {
-					if (match(state, i, j - 1, sevenTrapSequence[player.ordinal()], 1, 1, 1)) {
-						sevenTraps++;
-					}
-				}
-			}
-		}
-
-		return sevenTraps;
-	}
-
-	private void createSevenTrapSequence() {
-		sevenTrapSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
-
-		for (MNKCellState i : MNKCellState.values()) {
-			sevenTrapSequence[i.ordinal()][0] = MNKCellState.FREE;
-			for (int j = 1; j < K; j++) {
-				sevenTrapSequence[i.ordinal()][j] = i;
-			}
-		}
-	}
-
-	private int evalOpenEnds(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-
-		return (countPositionForward(state, openEndSequence[player.ordinal()])
-				+ countPositionBackward(state, openEndSequence[player.ordinal()]));
-	}
-
-	private void createOpenEndSequence() {
-		openEndSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K + 1];
-		for (MNKCellState i : MNKCellState.values()) {
-			openEndSequence[i.ordinal()][0] = MNKCellState.FREE;
-			for (int j = 1; j < K - 1; j++) {
-				openEndSequence[i.ordinal()][j] = i;
-			}
-			openEndSequence[i.ordinal()][K - 1] = MNKCellState.FREE;
-			openEndSequence[i.ordinal()][K] = MNKCellState.FREE;
-		}
-	}
-
-	private int evalThreats(MNKBoard state, boolean isAi) {
-		MNKCellState player = (isAi) ? me : opponent;
-
-		return (countPositionForward(state, threatSequence[player.ordinal()])
-				+ countPositionBackward(state, threatSequence[player.ordinal()]));
-	}
-
-	private void createThreatSequence() {
-		threatSequence = new MNKCellState[MNKCellState.FREE.ordinal() + 1][K];
-		for (MNKCellState i : MNKCellState.values()) {
-			threatSequence[i.ordinal()][0] = MNKCellState.FREE;
-			for (int j = 1; j < K; j++) {
-				threatSequence[i.ordinal()][j] = i;
-			}
-		}
+		System.out.println();
 	}
 
 	private void debugMessage(boolean timeout) {
@@ -510,94 +442,6 @@ public class NostroPlayer implements MNKPlayer {
 		System.out.println(
 				"(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateEvalued
 						+ " su " + gameStateSkipped);
-	}
-
-	/**
-	 * match, cost: O(|sequence|) = O(K).
-	 * 
-	 * @param board      board.
-	 * @param x          pos x.
-	 * @param y          pos y.
-	 * @param sequence   sequence of simbols to find.
-	 * @param directionX direction x.
-	 * @param directionY direction y.
-	 * @param revert     sequence revertion.
-	 * @return true if is thera a sequence, false if else.
-	 */
-	private boolean match(MNKBoard board, int x, int y, MNKCellState[] sequence, int directionX, int directionY,
-			int revert) {
-		int s = revert > 0 ? 0 : sequence.length - 1;
-
-		if (this.inBounds(x + directionX * (sequence.length - 1), y + directionY * (sequence.length - 1))) {
-			for (int i = 0; i < sequence.length; i++) {
-				if (board.cellState(x, y) != sequence[s])
-					return false;
-				x += directionX;
-				y += directionY;
-				s += revert;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * match position FIXED(ideas in meating 15/11/22), cost: O(4K) ~ O(K).
-	 * 
-	 * @param board     board.
-	 * @param x         pos x.
-	 * @param y         pos y.
-	 * @param sequence  sequence of simbols to find.
-	 * @param direction sequence direction.
-	 * @return number of sequence starting from the specified position.
-	 */
-	private int matchPosition(MNKBoard board, int x, int y, MNKCellState[] sequence, int direction) {
-		int starting = 0;
-		// horiz
-		if (match(board, x, y, sequence, 1, 0, direction))
-			starting++;
-		// vertic
-		if (match(board, x, y, sequence, 0, 1, direction))
-			starting++;
-		// diag right
-		if (match(board, x, y, sequence, 1, 1, direction))
-			starting++;
-		// diag left
-		if (match(board, x, y, sequence, 1, -1, direction))
-			starting++;
-		return starting;
-	}
-
-	/**
-	 * Find out how many sequence are there in the board(it scans forwards), cost:
-	 * O(4MNK) ~ O(MNK).
-	 * 
-	 * @param board    board to check.
-	 * @param sequence looking for sequence.
-	 * @return number os sequence.
-	 */
-	private int countPositionForward(MNKBoard board, MNKCellState[] sequence) {
-		int sequenceCount = 0;
-		for (int i = 0; i < M; i++)
-			for (int j = 0; j < N; j++)
-				sequenceCount += matchPosition(board, i, j, sequence, 1);
-		return sequenceCount;
-	}
-
-	/**
-	 * Find out how many sequence are there in the board(it scans backwards), cost:
-	 * O(4MNK) ~ O(MNK).
-	 * 
-	 * @param board    board to check.
-	 * @param sequence looking for sequence.
-	 * @return number os sequence.
-	 */
-	private int countPositionBackward(MNKBoard board, MNKCellState[] sequence) {
-		int sequenceCount = 0;
-		for (int i = 0; i < M; i++)
-			for (int j = 0; j < N; j++)
-				sequenceCount += matchPosition(board, i, j, sequence, -1);
-		return sequenceCount;
 	}
 
 	/*
@@ -619,4 +463,5 @@ public class NostroPlayer implements MNKPlayer {
 		}
 		return false; // case cell isn't adjacent
 	}
+
 }

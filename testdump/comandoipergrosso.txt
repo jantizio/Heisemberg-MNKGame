@@ -1,0 +1,78 @@
+echo 3 3 3 && 
+java -cp classes mnkgame.MNKPlayerTester 3 3 3 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 3 3 3 tester.OurPlayer player.NostroPlayer && 
+echo 4 3 3 && 
+java -cp classes mnkgame.MNKPlayerTester 4 3 3 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 4 3 3 tester.OurPlayer player.NostroPlayer && 
+echo 4 4 3 && 
+java -cp classes mnkgame.MNKPlayerTester 4 4 3 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 4 4 3 tester.OurPlayer player.NostroPlayer && 
+echo 4 4 4 && 
+java -cp classes mnkgame.MNKPlayerTester 4 4 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 4 4 4 tester.OurPlayer player.NostroPlayer && 
+echo 5 4 4 && 
+java -cp classes mnkgame.MNKPlayerTester 5 4 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 5 4 4 tester.OurPlayer player.NostroPlayer && 
+echo 5 5 4 && 
+java -cp classes mnkgame.MNKPlayerTester 5 5 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 5 5 4 tester.OurPlayer player.NostroPlayer && 
+echo 5 5 5 && 
+java -cp classes mnkgame.MNKPlayerTester 5 5 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 5 5 5 tester.OurPlayer player.NostroPlayer && 
+echo 6 4 4 && 
+java -cp classes mnkgame.MNKPlayerTester 6 4 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 6 4 4 tester.OurPlayer player.NostroPlayer && 
+echo 6 5 4 && 
+java -cp classes mnkgame.MNKPlayerTester 6 5 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 6 5 4 tester.OurPlayer player.NostroPlayer && 
+echo 6 6 4 && 
+java -cp classes mnkgame.MNKPlayerTester 6 6 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 6 6 4 tester.OurPlayer player.NostroPlayer &&
+echo 6 6 5 &&
+java -cp classes mnkgame.MNKPlayerTester 6 6 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 6 6 5 tester.OurPlayer player.NostroPlayer &&
+echo 6 6 6 &&
+java -cp classes mnkgame.MNKPlayerTester 6 6 6 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 6 6 6 tester.OurPlayer player.NostroPlayer &&
+echo 7 4 4 &&
+java -cp classes mnkgame.MNKPlayerTester 7 4 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 4 4 tester.OurPlayer player.NostroPlayer &&
+echo 7 5 4 &&
+java -cp classes mnkgame.MNKPlayerTester 7 5 4 player.NostroPlayer tester.OurPlayer &&
+java -cp classes mnkgame.MNKPlayerTester 7 5 4 tester.OurPlayer player.NostroPlayer &&
+echo 7 6 4 &&
+java -cp classes mnkgame.MNKPlayerTester 7 6 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 6 4 tester.OurPlayer player.NostroPlayer &&
+echo 7 7 4 &&
+java -cp classes mnkgame.MNKPlayerTester 7 7 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 7 4 tester.OurPlayer player.NostroPlayer &&
+echo 7 5 5 &&
+java -cp classes mnkgame.MNKPlayerTester 7 5 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 5 5 tester.OurPlayer player.NostroPlayer &&
+echo 7 6 5 &&
+java -cp classes mnkgame.MNKPlayerTester 7 6 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 6 5 tester.OurPlayer player.NostroPlayer &&
+echo 7 7 5 &&
+java -cp classes mnkgame.MNKPlayerTester 7 7 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 7 5 tester.OurPlayer player.NostroPlayer &&
+echo 7 7 6 &&
+java -cp classes mnkgame.MNKPlayerTester 7 7 6 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 7 6 tester.OurPlayer player.NostroPlayer &&
+echo 7 7 7 &&
+java -cp classes mnkgame.MNKPlayerTester 7 7 7 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 7 7 7 tester.OurPlayer player.NostroPlayer &&
+echo 8 8 4 &&
+java -cp classes mnkgame.MNKPlayerTester 8 8 4 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 8 8 4 tester.OurPlayer player.NostroPlayer &&
+echo 10 10 5 &&
+java -cp classes mnkgame.MNKPlayerTester 10 10 5 player.NostroPlayer tester.OurPlayer && 
+java -cp classes mnkgame.MNKPlayerTester 10 10 5 tester.OurPlayer player.NostroPlayer &&
+
+
+
+
+
+
+
+
+echo 3 3 3 && java -cp classes mnkgame.MNKPlayerTester 3 3 3 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 3 3 3 tester.OurPlayer player.NostroPlayer && echo 4 3 3 && java -cp classes mnkgame.MNKPlayerTester 4 3 3 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 4 3 3 tester.OurPlayer player.NostroPlayer && echo 4 4 3 && java -cp classes mnkgame.MNKPlayerTester 4 4 3 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 4 4 3 tester.OurPlayer player.NostroPlayer && echo 4 4 4 && java -cp classes mnkgame.MNKPlayerTester 4 4 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 4 4 4 tester.OurPlayer player.NostroPlayer && echo 5 4 4 && java -cp classes mnkgame.MNKPlayerTester 5 4 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 5 4 4 tester.OurPlayer player.NostroPlayer && echo 5 5 4 && java -cp classes mnkgame.MNKPlayerTester 5 5 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 5 5 4 tester.OurPlayer player.NostroPlayer && echo 5 5 5 && java -cp classes mnkgame.MNKPlayerTester 5 5 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 5 5 5 tester.OurPlayer player.NostroPlayer && echo 6 4 4 && java -cp classes mnkgame.MNKPlayerTester 6 4 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 6 4 4 tester.OurPlayer player.NostroPlayer && echo 6 5 4 && java -cp classes mnkgame.MNKPlayerTester 6 5 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 6 5 4 tester.OurPlayer player.NostroPlayer && echo 6 6 4 && java -cp classes mnkgame.MNKPlayerTester 6 6 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 6 6 4 tester.OurPlayer player.NostroPlayer && echo 6 6 5 && java -cp classes mnkgame.MNKPlayerTester 6 6 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 6 6 5 tester.OurPlayer player.NostroPlayer && echo 6 6 6 && java -cp classes mnkgame.MNKPlayerTester 6 6 6 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 6 6 6 tester.OurPlayer player.NostroPlayer && echo 7 4 4 && java -cp classes mnkgame.MNKPlayerTester 7 4 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 4 4 tester.OurPlayer player.NostroPlayer && echo 7 5 4 && java -cp classes mnkgame.MNKPlayerTester 7 5 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 5 4 tester.OurPlayer player.NostroPlayer && echo 7 6 4 && java -cp classes mnkgame.MNKPlayerTester 7 6 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 6 4 tester.OurPlayer player.NostroPlayer && echo 7 7 4 && java -cp classes mnkgame.MNKPlayerTester 7 7 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 7 4 tester.OurPlayer player.NostroPlayer && echo 7 5 5 && java -cp classes mnkgame.MNKPlayerTester 7 5 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 5 5 tester.OurPlayer player.NostroPlayer && echo 7 6 5 && java -cp classes mnkgame.MNKPlayerTester 7 6 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 6 5 tester.OurPlayer player.NostroPlayer && echo 7 7 5 && java -cp classes mnkgame.MNKPlayerTester 7 7 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 7 5 tester.OurPlayer player.NostroPlayer && echo 7 7 6 && java -cp classes mnkgame.MNKPlayerTester 7 7 6 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 7 6 tester.OurPlayer player.NostroPlayer && echo 7 7 7 && java -cp classes mnkgame.MNKPlayerTester 7 7 7 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 7 7 7 tester.OurPlayer player.NostroPlayer && echo 8 8 4 && java -cp classes mnkgame.MNKPlayerTester 8 8 4 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 8 8 4 tester.OurPlayer player.NostroPlayer && echo 10 10 5 && java -cp classes mnkgame.MNKPlayerTester 10 10 5 player.NostroPlayer tester.OurPlayer && java -cp classes mnkgame.MNKPlayerTester 10 10 5 tester.OurPlayer player.NostroPlayer
