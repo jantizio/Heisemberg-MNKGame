@@ -1,6 +1,5 @@
 package player;
 
-import java.util.Arrays;
 
 import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
@@ -71,14 +70,7 @@ public class BoardEnhanced
     }
 
     private boolean inBounds(int x, int y) {
-        return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
-    }
-
-    public void printMatrix() {
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) System.out.printf("%-4s : %-3d", nodesBoard[i][j].getItem().state, nodesBoard[i][j].getItem().getWeight());
-            System.out.println();
-        }
+        return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
     }
 
     public CellEnhanced[] getMoveOrder() {
@@ -94,44 +86,6 @@ public class BoardEnhanced
             } while(nodo!=null && nodo.getItem()!=null);
         }
         return temp;
-    }
-
-    public static void main(String[] args) {
-        BoardEnhanced b = new BoardEnhanced(3, 3, 3);
-
-        b.printMatrix();
-        b.markCell(0, 2);
-        b.printMatrix();
-        b.markCell(2, 2);
-        b.printMatrix();
-
-        System.out.println(Arrays.toString(b.getMoveOrder()));
-        System.out.println();
-        b.markCell(0, 0);
-
-        for (int i = 0; i < b.M; i++) {
-            for (int j = 0; j < b.N; j++) {
-                System.out.print(b.mnkboard.cellState(i, j) + " ");
-            }
-            System.out.println();
-        }
-
-        System.out.println(Arrays.toString(b.getMoveOrder()));
-
-        b.unmarkCell(0, 0);
-        b.printMatrix();
-        System.out.println(Arrays.toString(b.getMoveOrder()));
-
-        b.unmarkCell(2, 2);
-        b.unmarkCell(0, 2);
-        b.printMatrix();
-        System.out.println(Arrays.toString(b.getMoveOrder()));
-        for (int i = 0; i < b.M; i++) {
-            for (int j = 0; j < b.N; j++) {
-                System.out.print(b.mnkboard.cellState(i, j) + " ");
-            }
-            System.out.println();
-        }
     }
 
 }
