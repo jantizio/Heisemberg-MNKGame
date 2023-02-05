@@ -3,7 +3,6 @@ package player;
 import mnkgame.*;
 import java.util.Random;
 
-
 public class NostroPlayer implements MNKPlayer {
 	private Random rand;
 	private MNKBoard B;
@@ -21,7 +20,6 @@ public class NostroPlayer implements MNKPlayer {
 	private boolean firstMove;
 
 	private Evaluator evaluator;
-
 
 	/**
 	 * Default empty constructor
@@ -48,7 +46,6 @@ public class NostroPlayer implements MNKPlayer {
 		isTreeCompleted = true;
 		firstMove = false;
 
-
 		if (MC.length > 0) {
 			MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
 			B.markCell(c.i, c.j); // Save the last move in the local MNKBoard
@@ -58,12 +55,12 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-		if (FC.length == M * N){
-			if(M * N < 500) {
+		if (FC.length == M * N) {
+			if (M * N < 500) {
 				firstMove = true;
-			}
-			else {
+			} else {
 				B.markCell((M - 1) / 2, (N - 1) / 2);
+				evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
 				return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
 			}
 		}
@@ -185,7 +182,6 @@ public class NostroPlayer implements MNKPlayer {
 		return bestScore;
 
 	}
-
 
 	/**
 	 * return true if the cell c has at least one non FREE cell

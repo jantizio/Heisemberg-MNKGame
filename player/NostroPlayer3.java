@@ -8,24 +8,25 @@ public class NostroPlayer3 implements MNKPlayer {
 	private BoardEnhanced BE;
 	private int TIMEOUT;
 	private int M, N, K;
-	
+
 	private Evaluator evaluator;
 
 	private MNKCell bestMove;
 	private MNKCell globalBestMove;
 	private long timerStart;
-	private final int INITIAL_DEPTH = 2;
+	private int INITIAL_DEPTH;
 	private boolean timedOut; // is true if the search got interrupted beacause of timeout
 	private boolean isTreeCompleted; // is true if the search completed the tree
 	private int currentDepth;
 
+	private int bigBoardDim = 500;
 
 	/**
 	 * Default empty constructor
 	 */
 	public NostroPlayer3() {
 	}
-		
+
 	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
@@ -36,6 +37,8 @@ public class NostroPlayer3 implements MNKPlayer {
 		this.N = N;
 		this.K = K;
 		isTreeCompleted = true;
+		if(M * N < bigBoardDim) INITIAL_DEPTH = 2;
+		else INITIAL_DEPTH = 1;
 	}
 
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -52,34 +55,40 @@ public class NostroPlayer3 implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
+		if (FC.length == M * N && M * N >= bigBoardDim) {
+			MNKCell centro = new MNKCell((M - 1) / 2, (N - 1) / 2);
+			BE.markCell(centro.i, centro.j);
+			evaluator.calculateIncidence(BE.mnkboard, centro.i, centro.j);
+			return centro;
+		}
+
 		evaluator.rebaseStore();
-		
+
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 
 		// iterative deepening search
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
-			
+
 			int searchResult;
-			if(M * N < 500)
+			if (M * N < bigBoardDim)
 				searchResult = alphabetaOrdered(BE, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			else
 				searchResult = alphabetaCutoff(BE.mnkboard, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			evaluator.resetStore();
 
 			// if the time is over stop the loop and the best move is the previous one
-			if (timedOut) 
+			if (timedOut)
 				break;
-			
 
 			globalBestMove = bestMove; // update the best move
-			
+
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
-			if (isTreeCompleted || searchResult >= evaluator.evalWeights[0] / 2) 
+			if (isTreeCompleted || searchResult >= evaluator.evalWeights[0] / 2)
 				break;
-			
+
 			isTreeCompleted = true; // if we are here then the flag was false,
 			// need to set to true for the next loop
 		}
@@ -89,7 +98,6 @@ public class NostroPlayer3 implements MNKPlayer {
 		evaluator.calculateIncidence(BE.mnkboard, globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
-
 
 	public String playerName() {
 		return "Heisenberg";
@@ -131,7 +139,7 @@ public class NostroPlayer3 implements MNKPlayer {
 				evaluator.calculateIncidence(b.mnkboard, c.i, c.j);
 
 				int score = alphabetaOrdered(b, depth - 1, alpha, beta, false);
-				
+
 				b.unmarkCell(c.i, c.j);
 				evaluator.undoIncidence();
 
@@ -156,9 +164,9 @@ public class NostroPlayer3 implements MNKPlayer {
 				}
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b.mnkboard, c.i, c.j);
-				
+
 				int score = alphabetaOrdered(b, depth - 1, alpha, beta, true);
-				
+
 				b.unmarkCell(c.i, c.j);
 				evaluator.undoIncidence();
 
@@ -174,8 +182,8 @@ public class NostroPlayer3 implements MNKPlayer {
 		}
 		return bestScore;
 	}
-	
-    /**
+
+	/**
 	 * Performs standard alphabeta pruning algorithm
 	 * 
 	 * @param b            current game board
@@ -276,8 +284,6 @@ public class NostroPlayer3 implements MNKPlayer {
 					continue;
 				if (!evaluator.inBounds(c.i + di, c.j + dj)) // case out of bound
 					continue;
-				if ((Math.abs(di) == 2 && Math.abs(dj) == 1) || (Math.abs(dj) == 2 && Math.abs(di) == 1)) // case cell not aligned
-					continue;
 				if (b.cellState(c.i + di, c.j + dj) != MNKCellState.FREE) // case cell is adjacent
 					return true;
 			}
@@ -286,5 +292,3 @@ public class NostroPlayer3 implements MNKPlayer {
 	}
 
 }
-
-
