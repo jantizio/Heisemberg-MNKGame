@@ -4,12 +4,14 @@ import java.util.Arrays;
 
 import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
+import mnkgame.MNKCellState;
 
-public class BoardEnhanced {
-    private CellEnhanced board[];
-    private CellEnhanced moveOrder[];
+public class BoardEnhanced
+{
+    private DoublyLinkedNode nodesBoard[][];
     private int M, N, K;
     public MNKBoard mnkboard;
+    private DoublyLinkedList weightArray[];
 
     public BoardEnhanced(int m, int n, int k, MNKBoard b) {
         this(m, n, k);
@@ -20,14 +22,15 @@ public class BoardEnhanced {
         this.M = M;
         this.N = N;
         this.K = K;
-        mnkboard = new MNKBoard(M, N, K);
-        board = new CellEnhanced[M * N];
-        moveOrder = new CellEnhanced[M * N];
+        this.mnkboard = new MNKBoard(M, N, K);
+        this.nodesBoard = new DoublyLinkedNode[M][N];
+        int max_dim=4*this.K*(this.K+1);
+        this.weightArray=new DoublyLinkedList[max_dim];
+        for (int i = 0; i < max_dim; i++) this.weightArray[i]=new DoublyLinkedList();
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                int p = matrixToArrayCoords(i, j);
-                board[p] = new CellEnhanced(new MNKCell(i, j));
-                moveOrder[p] = board[p];
+                this.nodesBoard[i][j] = new DoublyLinkedNode(new CellEnhanced(new MNKCell(i, j)));
+                this.weightArray[0].addNode(this.nodesBoard[i][j]);
             }
         }
     }
@@ -40,7 +43,12 @@ public class BoardEnhanced {
                 for (int k = 1; k < K; k++) {
                     int i1 = i + k * x, j1 = j - k * y;
                     if (inBounds(i1, j1))
-                        board[matrixToArrayCoords(i1, j1)].addWeight(d * (K - k + 1));
+                    {
+                        int weight=d * (K - k + 1);
+                        DoublyLinkedList.delNode(nodesBoard[i1][j1]);
+                        this.nodesBoard[i1][j1].getItem().addWeight(weight);
+                        if(this.nodesBoard[i1][j1].getItem().state==MNKCellState.FREE) this.weightArray[this.nodesBoard[i1][j1].getItem().getWeight()].addNode(this.nodesBoard[i1][j1]);
+                    }
                 }
             }
         }
@@ -48,42 +56,43 @@ public class BoardEnhanced {
 
     public void unmarkCell(int i, int j) {
         mnkboard.unmarkCell();
-        board[matrixToArrayCoords(i, j)].state = mnkboard.cellState(i, j);
+        DoublyLinkedNode node=nodesBoard[i][j];
+        this.weightArray[node.getItem().getWeight()].addNode(node);
+        node.getItem().state = mnkboard.cellState(i, j);
         checkStar(i, j, -1);
     }
 
     public void markCell(int i, int j) {
         mnkboard.markCell(i, j);
-        board[matrixToArrayCoords(i, j)].state = mnkboard.cellState(i, j);
+        DoublyLinkedNode node=nodesBoard[i][j];
+        DoublyLinkedList.delNode(node);
+        node.getItem().state = mnkboard.cellState(i, j);
         checkStar(i, j, 1);
-    }
-
-    private int matrixToArrayCoords(int i, int j) {
-        return i * N + j;
     }
 
     private boolean inBounds(int x, int y) {
         return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
     }
 
-    private boolean inBounds(int p) {
-        return ((0 <= p) && (p < M * N)) ? true : false;
-    }
-
     public void printMatrix() {
         for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                int p = matrixToArrayCoords(i, j);
-                System.out.printf("%-4s : %-3d", board[p].state, board[p].getWeight());
-            }
+            for (int j = 0; j < N; j++) System.out.printf("%-4s : %-3d", nodesBoard[i][j].getItem().state, nodesBoard[i][j].getItem().getWeight());
             System.out.println();
         }
-        // System.out.println();
     }
 
     public CellEnhanced[] getMoveOrder() {
-        Arrays.sort(moveOrder);
-        CellEnhanced[] temp = moveOrder.clone();
+        CellEnhanced temp[]=new CellEnhanced[M*N-this.mnkboard.getMarkedCells().length];
+        int c=0;
+        for (int i = this.weightArray.length-1; i >= 0 ; i--) {
+            if(this.weightArray[i].isEmpty()) continue;
+            DoublyLinkedNode nodo=this.weightArray[i].getNextIteration(true);
+            do
+            {
+                temp[c++]=nodo.getItem();
+                nodo=this.weightArray[i].getNextIteration(false);
+            } while(nodo!=null && nodo.getItem()!=null);
+        }
         return temp;
     }
 
