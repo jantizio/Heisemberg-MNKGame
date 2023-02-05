@@ -60,11 +60,11 @@ public class NostroPlayer3 implements MNKPlayer {
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
 			
-            int searchResult;
-            if(M*N < 500)
-			    searchResult = alphabetaOrdered(BE, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-            else 
-			    searchResult = alphabetaCutoff(BE.mnkboard, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+			int searchResult;
+			if(M * N < 500)
+				searchResult = alphabetaOrdered(BE, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+			else
+				searchResult = alphabetaCutoff(BE.mnkboard, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			evaluator.resetStore();
 
 			// if the time is over stop the loop and the best move is the previous one
@@ -73,7 +73,7 @@ public class NostroPlayer3 implements MNKPlayer {
 			
 
 			globalBestMove = bestMove; // update the best move
-			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove + " with score: " + searchResult);
+			
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
@@ -92,7 +92,7 @@ public class NostroPlayer3 implements MNKPlayer {
 
 
 	public String playerName() {
-		return "TicTacToe PRO+"; // TODO: scegliere un nome
+		return "Heisenberg";
 	}
 
 	/**
@@ -259,8 +259,7 @@ public class NostroPlayer3 implements MNKPlayer {
 
 	}
 
-    
-    /**
+	/**
 	 * return true if the cell c has at least one non FREE cell
 	 * in a 5x5 grid around it. False otherwise
 	 * 
@@ -270,7 +269,7 @@ public class NostroPlayer3 implements MNKPlayer {
 	 * @implNote O(9)
 	 */
 	private boolean hasAdjacent(MNKBoard b, MNKCell c) {
-		int range = 2;
+		int range = 1;
 		for (int di = -range; di <= range; di++) {
 			for (int dj = -range; dj <= range; dj++) {
 				if (di == 0 && dj == 0) // case cell c

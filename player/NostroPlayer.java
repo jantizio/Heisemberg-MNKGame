@@ -40,42 +40,6 @@ public class NostroPlayer implements MNKPlayer {
 		this.K = K;
 		isTreeCompleted = true;
 		firstMove = false;
-
-		// B.markCell(9, 9);
-		// B.markCell(8, 8);
-		// B.markCell(9, 5);
-		// B.markCell(7, 7);
-		// B.markCell(4, 7);
-
-		// for (int i = 0; i < M; i++) {
-		// for (int j = 0; j < N; j++) {
-		// switch (B.cellState(i, j)) {
-		// case P1:
-		// System.out.print("X ");
-		// break;
-		// case P2:
-		// System.out.print("O ");
-		// break;
-		// case FREE:
-		// if (hasAdjacent(B, new MNKCell(i, j)))
-		// System.out.print("# ");
-		// else
-		// System.out.print("@ ");
-		// break;
-
-		// default:
-		// break;
-		// }
-		// }
-		// System.out.println();
-		// }
-
-		// B.unmarkCell();
-		// B.unmarkCell();
-		// B.unmarkCell();
-		// B.unmarkCell();
-		// B.unmarkCell();
-
 	}
 
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -104,15 +68,6 @@ public class NostroPlayer implements MNKPlayer {
 			}
 		}
 
-		/*
-		 * TODO: capire perchè una cella già marcata risulta free
-		 * 
-		 * MNKCell res=bigSelect(B.getFreeCells(), B.getMarkedCells());
-		 * System.out.println("Selected cell: ["+res.i+", "+res.j+"]");
-		 * B.markCell(res.i,res.j);
-		 * return res;
-		 * 
-		 */
 		evaluator.rebaseStore();
 
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
@@ -128,7 +83,6 @@ public class NostroPlayer implements MNKPlayer {
 				break;
 
 			globalBestMove = bestMove; // update the best move
-			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
 
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
@@ -139,135 +93,13 @@ public class NostroPlayer implements MNKPlayer {
 									// need to set to true for the next loop
 		}
 
-		// System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
 		evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
 
-	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC) {
-		int totalPos = 8;
-		int matrAroundPos[][] = {
-				{ -1, -1 },
-				{ 0, -1 },
-				{ 1, -1 },
-				{ -1, 0 },
-				{ 1, 0 },
-				{ -1, 1 },
-				{ 0, 1 },
-				{ 1, 1 }
-		};
-		int matrDirectionAround[][] = {
-				{ 1, 1 },
-				{ 0, 1 },
-				{ -1, 1 },
-				{ 1, 0 },
-				{ -1, 0 },
-				{ 1, -1 },
-				{ 0, -1 },
-				{ -1, -1 }
-		};
-
-		int centerI = (M - 1) / 2, centerJ = (N - 1) / 2;
-		// case first: take one of the central cells
-		if (MC.length == 0)
-			return new MNKCell(centerI, centerJ);
-		// case second: take one of the central cells or near to the center if, the
-		// center one is taken
-		if (MC.length == 1) {
-			if (B.cellState(centerI - 1, centerJ - 1) == MNKCellState.FREE)
-				return new MNKCell(centerI - 1, centerJ - 1);
-			return new MNKCell(centerI, centerJ);
-		}
-
-		MNKCell lastMove = MC[MC.length - 1];
-		MNKCell MyLastMove = MC[MC.length - 2];
-		// case third:
-		if (MC.length <= 3) {
-			for (int di = -1; di <= 1; di++) {
-				for (int dj = -1; dj <= 1; dj++) {
-					if (di == 0 && dj == 0) // case cell c
-						continue;
-					if (!evaluator.inBounds(MyLastMove.i + di, MyLastMove.j + dj)) // case out of bound
-						continue;
-					if (B.cellState(MyLastMove.i + di, MyLastMove.j + dj) == MNKCellState.FREE)
-						return new MNKCell(di + MyLastMove.i, dj + MyLastMove.j);
-				}
-			}
-		}
-		// middle game cases
-		else {
-			// One more move to my win
-			for (MNKCell d : FC) {
-				if (B.markCell(d.i, d.j) == evaluator.myWin)
-					return d;
-				else
-					B.unmarkCell();
-			}
-
-			// One more move to opponent win
-			MNKCell c = FC[rand.nextInt(FC.length)];
-			B.markCell(c.i, c.j);
-			for (MNKCell d : FC) {
-				if (d == c) {
-					continue;
-				}
-				if (B.markCell(d.i, d.j) == evaluator.yourWin) {
-					B.unmarkCell();
-					B.unmarkCell();
-					B.markCell(d.i, d.j);
-					return d;
-				} else {
-					B.unmarkCell();
-				}
-			}
-
-			// case near to lost: FREE [k-2 opponent] FREE
-			MNKCellState opponentSequence[] = new MNKCellState[K];
-			opponentSequence[0] = opponentSequence[K - 1] = MNKCellState.FREE;
-			for (int i = 1; i < opponentSequence.length - 1; i++)
-				opponentSequence[i] = evaluator.opponent;
-			for (int i = 0; i < totalPos; i++) {
-				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1],
-						opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
-					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]);
-			}
-
-			// case near to win: FREE [k-2 opponent] FREE
-			MNKCellState myPlayerSequence[] = new MNKCellState[K];
-			myPlayerSequence[0] = myPlayerSequence[K - 1] = MNKCellState.FREE;
-			for (int i = 1; i < myPlayerSequence.length - 1; i++)
-				myPlayerSequence[i] = evaluator.me;
-			for (int i = 0; i < totalPos; i++) {
-				if (evaluator.match(B, MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1],
-						myPlayerSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
-					return new MNKCell(MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1]);
-			}
-
-			// Continue the sequence
-			for (int i = MC.length - 2; i >= 0; i -= 2) {
-				for (int di = -1; di <= 1; di++) {
-					for (int dj = -1; dj <= 1; dj++) {
-						if (di == 0 && dj == 0) // case cell c
-							continue;
-						if (!evaluator.inBounds(MC[i].i + di, MC[i].j + dj)) // case out of bound
-							continue;
-						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me) {
-							if (!evaluator.inBounds(MC[i].i - di, MC[i].j - dj))
-								continue;
-							if (B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
-								return MC[i];
-						}
-					}
-				}
-			}
-		}
-
-		return FC[rand.nextInt(FC.length - 1)];
-	}
-
 	public String playerName() {
-		return "cutoff optimize"; // TODO: scegliere un nome
+		return "Heisenberg-cutoff";
 	}
 
 	/**

@@ -69,7 +69,7 @@ public class NostroPlayer2 implements MNKPlayer {
 			
 
 			globalBestMove = bestMove; // update the best move
-			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove + " with score: " + searchResult);
+			
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
@@ -80,14 +80,13 @@ public class NostroPlayer2 implements MNKPlayer {
 			// need to set to true for the next loop
 		}
 
-		// System.out.println("Move chosen!\n");
 		BE.markCell(globalBestMove.i, globalBestMove.j);
 		evaluator.calculateIncidence(BE.mnkboard, globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
 
 	public String playerName() {
-		return "TicTacToe PRO+"; // TODO: scegliere un nome
+		return "Heisenberg-sorting";
 	}
 
 	/**

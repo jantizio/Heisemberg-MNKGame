@@ -1,22 +1,21 @@
 package player;
 
-public class DoublyLinkedNode
-{
+public class DoublyLinkedNode {
     private CellEnhanced item;
     private DoublyLinkedNode next, prev;
 
     /**
      * Constructor.
+     * 
      * @param item item.
      */
-    public DoublyLinkedNode(CellEnhanced item)
-    {
-        this.item=item;
+    public DoublyLinkedNode(CellEnhanced item) {
+        this.item = item;
     }
 
-    public boolean isSentinella()
-    {
-        if(this.item==null) return true;
+    public boolean isSentinella() {
+        if (this.item == null)
+            return true;
         return false;
     }
 
@@ -24,23 +23,19 @@ public class DoublyLinkedNode
         return this.item;
     }
 
-    public DoublyLinkedNode getNext()
-    {
-		return this.next;
-	}
+    public DoublyLinkedNode getNext() {
+        return this.next;
+    }
 
-    public void setNext(DoublyLinkedNode next)
-    {
-		this.next = next;
-	}
+    public void setNext(DoublyLinkedNode next) {
+        this.next = next;
+    }
 
-    public DoublyLinkedNode getPrev()
-    {
-		return this.prev;
-	}
+    public DoublyLinkedNode getPrev() {
+        return this.prev;
+    }
 
-    public void setPrev(DoublyLinkedNode prev)
-    {
-		this.prev = prev;
-	}
+    public void setPrev(DoublyLinkedNode prev) {
+        this.prev = prev;
+    }
 }
