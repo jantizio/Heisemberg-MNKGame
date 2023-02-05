@@ -151,14 +151,13 @@ public class NostroPlayer implements MNKPlayer {
 		// iterative deepening search
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
-			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true, true);
 			// if the time is over stop the loop and the best move is the previous one
 			if (timedOut)
 				break;
 
 			globalBestMove = bestMove; // update the best move
-			// System.out.println("Completed search with depth " + currentDepth + ". Best
-			// move so far: " + globalBestMove);
+			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
@@ -188,7 +187,7 @@ public class NostroPlayer implements MNKPlayer {
 	 * @param isMaximazing whether the current player is the min or max player
 	 * @return the score of the given board
 	 */
-	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing) {
+	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing, boolean firstMove) {
 		gameStateCounter += 1;
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
@@ -205,7 +204,7 @@ public class NostroPlayer implements MNKPlayer {
 			bestScore = Integer.MIN_VALUE;
 			for (MNKCell c : FC) {
 				gameStateSkipped += 1;
-				if (!asAdjacent(b, c))
+				if (!asAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
@@ -214,11 +213,14 @@ public class NostroPlayer implements MNKPlayer {
 				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, false);
+				int score = alphabeta(b, depth - 1, alpha, beta, false, false);
 				b.unmarkCell();
 
 				// if (depth == currentDepth) {
 				// System.out.println(c + " " + score);
+				// }
+				// if(depth == currentDepth-1){
+				// 	System.out.println("\t"+c+" "+ score);
 				// }
 
 				if (score > bestScore) {
@@ -235,7 +237,7 @@ public class NostroPlayer implements MNKPlayer {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell c : FC) {
 				gameStateSkipped += 1;
-				if (!asAdjacent(b, c))
+				if (!asAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
 					timedOut = true;
@@ -244,11 +246,14 @@ public class NostroPlayer implements MNKPlayer {
 				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, true);
+				int score = alphabeta(b, depth - 1, alpha, beta, true, false);
 				b.unmarkCell();
 
 				// if (depth == currentDepth) {
 				// System.out.println(c + " " + score);
+				// }
+				// if(depth == currentDepth-1){
+				// 	System.out.println("\t"+c+" "+ score);
 				// }
 
 				if (score < bestScore) {
@@ -497,7 +502,6 @@ public class NostroPlayer implements MNKPlayer {
 				threatSequence[i.ordinal()][j] = i;
 			}
 		}
-
 	}
 
 	private void debugMessage(boolean timeout) {

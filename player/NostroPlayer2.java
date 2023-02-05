@@ -2,7 +2,6 @@ package player;
 
 import mnkgame.*;
 
-import java.util.Arrays;
 import java.util.Random;
 
 public class NostroPlayer2 implements MNKPlayer {
@@ -103,25 +102,24 @@ public class NostroPlayer2 implements MNKPlayer {
 			int searchResult = alphabeta(BE, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			// if the time is over stop the loop and the best move is the previous one
 			if (timedOut) {
-				System.out.println("tempo finito");
+				// System.out.println("tempo finito");
 				break;
 			}
 
 			globalBestMove = bestMove; // update the best move
-			System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove
-					+ " with score: " + searchResult);
+			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove + " with score: " + searchResult);
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
 			if (isTreeCompleted || searchResult >= evalWeights[0] / 2) {
-				System.out.println((isTreeCompleted) ? "albero completato" : "trovata mossa vincente al 100%");
+				// System.out.println((isTreeCompleted) ? "albero completato" : "trovata mossa vincente al 100%");
 				break;
 			}
 			isTreeCompleted = true; // if we are here then the flag was false,
 			// need to set to true for the next loop
 		}
 
-		System.out.println("Move chosen!\n");
+		// System.out.println("Move chosen!\n");
 		BE.markCell(globalBestMove.i, globalBestMove.j);
 		return globalBestMove;
 	}
