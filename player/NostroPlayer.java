@@ -42,7 +42,6 @@ public class NostroPlayer implements MNKPlayer {
 		this.K = K;
 		isTreeCompleted = true;
 
-
 		// debug variables
 		gameStateCounter = 0;
 		numMosse = 0;
@@ -103,7 +102,6 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-
 		int x = 0, y = 0, max = -1;
 		if (FC.length == M * N) {
 			// for (int i = 0; i < M; i++) {
@@ -122,18 +120,16 @@ public class NostroPlayer implements MNKPlayer {
 
 		}
 
-
 		/*
-		TODO: capire perchè una cella già marcata risulta free
-		
-		MNKCell res=bigSelect(B.getFreeCells(), B.getMarkedCells());
-		System.out.println("Selected cell: ["+res.i+", "+res.j+"]");
-		B.markCell(res.i,res.j);
-		return res;
-		
-		*/
+		 * TODO: capire perchè una cella già marcata risulta free
+		 * 
+		 * MNKCell res=bigSelect(B.getFreeCells(), B.getMarkedCells());
+		 * System.out.println("Selected cell: ["+res.i+", "+res.j+"]");
+		 * B.markCell(res.i,res.j);
+		 * return res;
+		 * 
+		 */
 		evaluator.rebaseStore();
-		
 
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 		// iterative deepening search
@@ -159,7 +155,6 @@ public class NostroPlayer implements MNKPlayer {
 									// need to set to true for the next loop
 		}
 
-
 		// debugMessage(timedOut);
 		// System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
@@ -167,67 +162,67 @@ public class NostroPlayer implements MNKPlayer {
 		return globalBestMove;
 	}
 
-	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC){
+	public MNKCell bigSelect(MNKCell[] FC, MNKCell[] MC) {
 		int totalPos = 8;
 		int matrAroundPos[][] = {
-			{-1, -1},
-			{0, -1},
-			{1, -1},
-			{-1, 0},
-			{1, 0},
-			{-1, 1},
-			{0, 1},
-			{1, 1}
+				{ -1, -1 },
+				{ 0, -1 },
+				{ 1, -1 },
+				{ -1, 0 },
+				{ 1, 0 },
+				{ -1, 1 },
+				{ 0, 1 },
+				{ 1, 1 }
 		};
 		int matrDirectionAround[][] = {
-			{1, 1},
-			{0, 1},
-			{-1, 1},
-			{1, 0},
-			{-1, 0},
-			{1, -1},
-			{0, -1},
-			{-1, -1}
+				{ 1, 1 },
+				{ 0, 1 },
+				{ -1, 1 },
+				{ 1, 0 },
+				{ -1, 0 },
+				{ 1, -1 },
+				{ 0, -1 },
+				{ -1, -1 }
 		};
 
-		int centerI = (M-1)/2, centerJ = (N-1)/2;
-		//case first: take one of the central cells
-		if(MC.length == 0)
+		int centerI = (M - 1) / 2, centerJ = (N - 1) / 2;
+		// case first: take one of the central cells
+		if (MC.length == 0)
 			return new MNKCell(centerI, centerJ);
-		//case second: take one of the central cells or near to the center if, the center one is taken
-		if(MC.length == 1)
-		{
-			if(B.cellState(centerI-1,centerJ-1)==MNKCellState.FREE) return new MNKCell(centerI-1, centerJ-1);
+		// case second: take one of the central cells or near to the center if, the
+		// center one is taken
+		if (MC.length == 1) {
+			if (B.cellState(centerI - 1, centerJ - 1) == MNKCellState.FREE)
+				return new MNKCell(centerI - 1, centerJ - 1);
 			return new MNKCell(centerI, centerJ);
 		}
 
 		MNKCell lastMove = MC[MC.length - 1];
 		MNKCell MyLastMove = MC[MC.length - 2];
-		//case third: 
-		if(MC.length <= 3)
-		{
+		// case third:
+		if (MC.length <= 3) {
 			for (int di = -1; di <= 1; di++) {
 				for (int dj = -1; dj <= 1; dj++) {
-					if (di == 0 && dj == 0)	//case cell c
+					if (di == 0 && dj == 0) // case cell c
 						continue;
-					if (!inBounds(MyLastMove.i + di, MyLastMove.j + dj))	//case out of bound
+					if (!inBounds(MyLastMove.i + di, MyLastMove.j + dj)) // case out of bound
 						continue;
 					if (B.cellState(MyLastMove.i + di, MyLastMove.j + dj) == MNKCellState.FREE)
 						return new MNKCell(di + MyLastMove.i, dj + MyLastMove.j);
 				}
 			}
 		}
-		//middle game cases
-		else{
-			//One more move to my win 
-			for(MNKCell d : FC) {
-				if(B.markCell(d.i,d.j) == evaluator.myWin)
+		// middle game cases
+		else {
+			// One more move to my win
+			for (MNKCell d : FC) {
+				if (B.markCell(d.i, d.j) == evaluator.myWin)
 					return d;
 				else
 					B.unmarkCell();
 			}
 
-			//One more move to opponent win 
+			// One more move to opponent win
 			MNKCell c = FC[rand.nextInt(FC.length)];
 			B.markCell(c.i, c.j);
 			for (MNKCell d : FC) {
@@ -244,59 +239,49 @@ public class NostroPlayer implements MNKPlayer {
 				}
 			}
 
-			//case near to lost: FREE [k-2 opponent] FREE
+			// case near to lost: FREE [k-2 opponent] FREE
 			MNKCellState opponentSequence[] = new MNKCellState[K];
-			opponentSequence[0] = opponentSequence[K-1] = MNKCellState.FREE;
+			opponentSequence[0] = opponentSequence[K - 1] = MNKCellState.FREE;
 			for (int i = 1; i < opponentSequence.length - 1; i++)
 				opponentSequence[i] = evaluator.opponent;
 			for (int i = 0; i < totalPos; i++) {
-				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1], opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
-					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]); 
+				if (evaluator.match(B, lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1],
+						opponentSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(lastMove.j + matrAroundPos[i][0], lastMove.i + matrAroundPos[i][1]);
 			}
 
-			//case near to win: FREE [k-2 opponent] FREE
+			// case near to win: FREE [k-2 opponent] FREE
 			MNKCellState myPlayerSequence[] = new MNKCellState[K];
-			myPlayerSequence[0] = myPlayerSequence[K-1] = MNKCellState.FREE;
+			myPlayerSequence[0] = myPlayerSequence[K - 1] = MNKCellState.FREE;
 			for (int i = 1; i < myPlayerSequence.length - 1; i++)
 				myPlayerSequence[i] = evaluator.me;
 			for (int i = 0; i < totalPos; i++) {
-				if(evaluator.match(B, MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1], myPlayerSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
-					return new MNKCell(MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1]); 
+				if (evaluator.match(B, MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1],
+						myPlayerSequence, matrDirectionAround[i][0], matrDirectionAround[i][1], 1))
+					return new MNKCell(MyLastMove.j + matrAroundPos[i][0], MyLastMove.i + matrAroundPos[i][1]);
 			}
-			
-			//Continue the sequence
-			for (int i = MC.length - 2; i >= 0; i-=2) {
+
+			// Continue the sequence
+			for (int i = MC.length - 2; i >= 0; i -= 2) {
 				for (int di = -1; di <= 1; di++) {
 					for (int dj = -1; dj <= 1; dj++) {
-						if (di == 0 && dj == 0)	//case cell c
+						if (di == 0 && dj == 0) // case cell c
 							continue;
-						if (!inBounds(MC[i].i + di, MC[i].j + dj))	//case out of bound
+						if (!inBounds(MC[i].i + di, MC[i].j + dj)) // case out of bound
 							continue;
-						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me){
+						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me) {
 							if (!inBounds(MC[i].i - di, MC[i].j - dj))
 								continue;
-							if(B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
+							if (B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
 								return MC[i];
 						}
 					}
 				}
 			}
 		}
-		
+
 		return FC[rand.nextInt(FC.length - 1)];
 	}
-
-	/**
-     * is in the bounds of the board
-     * 
-     * @param x pos x.
-     * @param y pos y.
-     * @return true if is in the bound, false if else.
-     * @implNote cost: O(1).
-     */
-    private boolean inBounds(int x, int y) {
-        return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
-    }
 
 	public String playerName() {
 		return "cutoff optimize"; // TODO: scegliere un nome
@@ -339,9 +324,9 @@ public class NostroPlayer implements MNKPlayer {
 
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
-        
+
 				int score = alphabeta(b, depth - 1, alpha, beta, false, false);
-        
+
 				b.unmarkCell();
 				evaluator.undoIncidence();
 
@@ -349,7 +334,7 @@ public class NostroPlayer implements MNKPlayer {
 				// System.out.println(c + " " + score);
 				// }
 				// if(depth == currentDepth-1){
-				// 	System.out.println("\t"+c+" "+ score);
+				// System.out.println("\t"+c+" "+ score);
 				// }
 
 				if (score > bestScore) {
@@ -375,8 +360,8 @@ public class NostroPlayer implements MNKPlayer {
 				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
-   			evaluator.calculateIncidence(b, c.i, c.j);
-        
+				evaluator.calculateIncidence(b, c.i, c.j);
+
 				int score = alphabeta(b, depth - 1, alpha, beta, true, false);
 
 				b.unmarkCell();
@@ -386,7 +371,7 @@ public class NostroPlayer implements MNKPlayer {
 				// System.out.println(c + " " + score);
 				// }
 				// if(depth == currentDepth-1){
-				// 	System.out.println("\t"+c+" "+ score);
+				// System.out.println("\t"+c+" "+ score);
 				// }
 
 				if (score < bestScore) {
@@ -404,44 +389,24 @@ public class NostroPlayer implements MNKPlayer {
 
 	}
 
-	/**
-	 * is in the bounds on the board, cost: O(1).
-	 * 
-	 * @param x pos x.
-	 * @param y pos y.
-	 * @return true if is in the bound, false if else.
-	 */
-	private boolean inBounds(int x, int y) {
-		return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
-	}
-
-		for (int i = 0; i < M; i++) {
-			for (int j = 0; j < N; j++) {
-				switch (b.cellState(i, j)) {
-					case P1:
-						System.out.print("X ");
-						break;
-					case P2:
-						System.out.print("O ");
-						break;
-					case FREE:
-						System.out.print("# ");
-						break;
-					default:
-						break;
-				}
-			}
-			System.out.println();
-		}
-		System.out.println();
-	}
-
 	private void debugMessage(boolean timeout) {
 		if (timeout)
 			System.out.print("time ended, ");
 		System.out.println(
 				"(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateEvalued
 						+ " su " + gameStateSkipped);
+	}
+
+	/**
+	 * is in the bounds of the board
+	 * 
+	 * @param x pos x.
+	 * @param y pos y.
+	 * @return true if is in the bound, false if else.
+	 * @implNote cost: O(1).
+	 */
+	private boolean inBounds(int x, int y) {
+		return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
 	}
 
 	/*
