@@ -18,6 +18,8 @@ public class NostroPlayer implements MNKPlayer {
 	private boolean isTreeCompleted; // is true if the search completed the tree
 	private int currentDepth;
 
+	private boolean firstMove;
+
 	private Evaluator evaluator;
 
 
@@ -37,6 +39,7 @@ public class NostroPlayer implements MNKPlayer {
 		this.N = N;
 		this.K = K;
 		isTreeCompleted = true;
+		firstMove = false;
 
 		// B.markCell(9, 9);
 		// B.markCell(8, 8);
@@ -54,7 +57,7 @@ public class NostroPlayer implements MNKPlayer {
 		// System.out.print("O ");
 		// break;
 		// case FREE:
-		// if (asAdjacent(B, new MNKCell(i, j)))
+		// if (hasAdjacent(B, new MNKCell(i, j)))
 		// System.out.print("# ");
 		// else
 		// System.out.print("@ ");
@@ -79,6 +82,7 @@ public class NostroPlayer implements MNKPlayer {
 		timerStart = System.currentTimeMillis();
 		timedOut = false;
 		isTreeCompleted = true;
+		firstMove = false;
 
 
 		if (MC.length > 0) {
@@ -90,9 +94,14 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-		if (FC.length == M * N) {
-			B.markCell((M - 1) / 2, (N - 1) / 2);
-			return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
+		if (FC.length == M * N){
+			if(M * N < 500) {
+				firstMove = true;
+			}
+			else {
+				B.markCell((M - 1) / 2, (N - 1) / 2);
+				return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
+			}
 		}
 
 		/*
@@ -111,7 +120,7 @@ public class NostroPlayer implements MNKPlayer {
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
 
-			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true, true);
+			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 			evaluator.resetStore();
 
 			// if the time is over stop the loop and the best move is the previous one
@@ -271,7 +280,7 @@ public class NostroPlayer implements MNKPlayer {
 	 * @param isMaximazing whether the current player is the min or max player
 	 * @return the score of the given board
 	 */
-	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing, boolean firstMove) {
+	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing) {
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
 		int bestScore;
@@ -286,7 +295,7 @@ public class NostroPlayer implements MNKPlayer {
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
 			for (MNKCell c : FC) {
-				if (!asAdjacent(b, c) && !firstMove)
+				if (!hasAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
@@ -296,7 +305,7 @@ public class NostroPlayer implements MNKPlayer {
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
 
-				int score = alphabeta(b, depth - 1, alpha, beta, false, false);
+				int score = alphabeta(b, depth - 1, alpha, beta, false);
 
 				b.unmarkCell();
 				evaluator.undoIncidence();
@@ -315,7 +324,7 @@ public class NostroPlayer implements MNKPlayer {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell c : FC) {
 
-				if (!asAdjacent(b, c) && !firstMove)
+				if (!hasAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
 					timedOut = true;
@@ -325,7 +334,7 @@ public class NostroPlayer implements MNKPlayer {
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
 
-				int score = alphabeta(b, depth - 1, alpha, beta, true, false);
+				int score = alphabeta(b, depth - 1, alpha, beta, true);
 
 				b.unmarkCell();
 				evaluator.undoIncidence();
@@ -346,10 +355,16 @@ public class NostroPlayer implements MNKPlayer {
 	}
 
 
-	/*
+	/**
+	 * return true if the cell c has at least one non FREE cell
+	 * in a 5x5 grid around it. False otherwise
+	 * 
+	 * @param b the board
+	 * @param c the cell
+	 * 
 	 * @implNote O(9)
 	 */
-	private boolean asAdjacent(MNKBoard b, MNKCell c) {
+	private boolean hasAdjacent(MNKBoard b, MNKCell c) {
 		int range = 2;
 		for (int di = -range; di <= range; di++) {
 			for (int dj = -range; dj <= range; dj++) {

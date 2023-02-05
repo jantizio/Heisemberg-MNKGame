@@ -16,7 +16,7 @@ public class Evaluator {
     private int currentMove;
     private int[][] myScores;
     private int[][] opponentScores;
-    public final int[] evalWeights = { 1000000, 100, 10, 15 };
+    public int[] evalWeights;
 
     public Evaluator(int m, int n, int k, boolean first) {
         M = m;
@@ -36,6 +36,19 @@ public class Evaluator {
         yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
         me = first ? MNKCellState.P1 : MNKCellState.P2;
         opponent = first ? MNKCellState.P2 : MNKCellState.P1;
+
+        evalWeights = new int[EvalType.values().length];
+
+        evalWeights[EvalType.WIN.ordinal()] = 1000000;
+        if(M*N < 500) {
+            evalWeights[EvalType.THREAT.ordinal()] = 100;
+            evalWeights[EvalType.OPENEND.ordinal()] = 10;
+            evalWeights[EvalType.WEIGHT.ordinal()] = 15;
+        } else {
+            evalWeights[EvalType.THREAT.ordinal()] = 200;
+            evalWeights[EvalType.OPENEND.ordinal()] = 50;
+            evalWeights[EvalType.WEIGHT.ordinal()] = 3;
+        }
 
         createPositionWeights();
         createOpenEndSequence();
