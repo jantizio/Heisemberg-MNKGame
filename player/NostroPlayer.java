@@ -1,11 +1,8 @@
 package player;
 
 import mnkgame.*;
-
-import java.time.YearMonth;
 import java.util.Random;
 
-import javax.lang.model.util.ElementScanner6;
 
 public class NostroPlayer implements MNKPlayer {
 	private Random rand;
@@ -23,7 +20,6 @@ public class NostroPlayer implements MNKPlayer {
 
 	private Evaluator evaluator;
 
-	private int gameStateCounter, numMosse, gameStateEvalued, gameStateSkipped; // debug variables
 
 	/**
 	 * Default empty constructor
@@ -41,12 +37,6 @@ public class NostroPlayer implements MNKPlayer {
 		this.N = N;
 		this.K = K;
 		isTreeCompleted = true;
-
-		// debug variables
-		gameStateCounter = 0;
-		numMosse = 0;
-		gameStateEvalued = 0;
-		gameStateSkipped = 0;
 
 		// B.markCell(9, 9);
 		// B.markCell(8, 8);
@@ -90,8 +80,6 @@ public class NostroPlayer implements MNKPlayer {
 		timedOut = false;
 		isTreeCompleted = true;
 
-		gameStateCounter = 0;
-		numMosse += 1;
 
 		if (MC.length > 0) {
 			MNKCell c = MC[MC.length - 1]; // Recover the last move from MC
@@ -102,22 +90,9 @@ public class NostroPlayer implements MNKPlayer {
 		if (FC.length == 1)
 			return FC[0];
 
-		int x = 0, y = 0, max = -1;
 		if (FC.length == M * N) {
-			// for (int i = 0; i < M; i++) {
-			// for (int j = 0; j < N; j++) {
-			// if (positionWeights[i][j] > max) {
-			// max = positionWeights[i][j];
-			// x = i;
-			// y = j;
-			// }
-			// }
-			// }
-
-			// B.markCell(x, y);
 			B.markCell((M - 1) / 2, (N - 1) / 2);
 			return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
-
 		}
 
 		/*
@@ -155,7 +130,6 @@ public class NostroPlayer implements MNKPlayer {
 									// need to set to true for the next loop
 		}
 
-		// debugMessage(timedOut);
 		// System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
 		evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
@@ -205,7 +179,7 @@ public class NostroPlayer implements MNKPlayer {
 				for (int dj = -1; dj <= 1; dj++) {
 					if (di == 0 && dj == 0) // case cell c
 						continue;
-					if (!inBounds(MyLastMove.i + di, MyLastMove.j + dj)) // case out of bound
+					if (!evaluator.inBounds(MyLastMove.i + di, MyLastMove.j + dj)) // case out of bound
 						continue;
 					if (B.cellState(MyLastMove.i + di, MyLastMove.j + dj) == MNKCellState.FREE)
 						return new MNKCell(di + MyLastMove.i, dj + MyLastMove.j);
@@ -267,10 +241,10 @@ public class NostroPlayer implements MNKPlayer {
 					for (int dj = -1; dj <= 1; dj++) {
 						if (di == 0 && dj == 0) // case cell c
 							continue;
-						if (!inBounds(MC[i].i + di, MC[i].j + dj)) // case out of bound
+						if (!evaluator.inBounds(MC[i].i + di, MC[i].j + dj)) // case out of bound
 							continue;
 						if (B.cellState(MC[i].i + di, MC[i].j + dj) == evaluator.me) {
-							if (!inBounds(MC[i].i - di, MC[i].j - dj))
+							if (!evaluator.inBounds(MC[i].i - di, MC[i].j - dj))
 								continue;
 							if (B.cellState(MC[i].i - di, MC[i].j - dj) == MNKCellState.FREE)
 								return MC[i];
@@ -298,7 +272,6 @@ public class NostroPlayer implements MNKPlayer {
 	 * @return the score of the given board
 	 */
 	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing, boolean firstMove) {
-		gameStateCounter += 1;
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
 		int bestScore;
@@ -313,14 +286,12 @@ public class NostroPlayer implements MNKPlayer {
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
 			for (MNKCell c : FC) {
-				gameStateSkipped += 1;
 				if (!asAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
-				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
@@ -329,13 +300,6 @@ public class NostroPlayer implements MNKPlayer {
 
 				b.unmarkCell();
 				evaluator.undoIncidence();
-
-				// if (depth == currentDepth) {
-				// System.out.println(c + " " + score);
-				// }
-				// if(depth == currentDepth-1){
-				// System.out.println("\t"+c+" "+ score);
-				// }
 
 				if (score > bestScore) {
 					bestScore = score;
@@ -350,14 +314,13 @@ public class NostroPlayer implements MNKPlayer {
 		} else {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell c : FC) {
-				gameStateSkipped += 1;
+
 				if (!asAdjacent(b, c) && !firstMove)
 					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
-				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
@@ -366,13 +329,6 @@ public class NostroPlayer implements MNKPlayer {
 
 				b.unmarkCell();
 				evaluator.undoIncidence();
-
-				// if (depth == currentDepth) {
-				// System.out.println(c + " " + score);
-				// }
-				// if(depth == currentDepth-1){
-				// System.out.println("\t"+c+" "+ score);
-				// }
 
 				if (score < bestScore) {
 					bestScore = score;
@@ -389,25 +345,6 @@ public class NostroPlayer implements MNKPlayer {
 
 	}
 
-	private void debugMessage(boolean timeout) {
-		if (timeout)
-			System.out.print("time ended, ");
-		System.out.println(
-				"(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateEvalued
-						+ " su " + gameStateSkipped);
-	}
-
-	/**
-	 * is in the bounds of the board
-	 * 
-	 * @param x pos x.
-	 * @param y pos y.
-	 * @return true if is in the bound, false if else.
-	 * @implNote cost: O(1).
-	 */
-	private boolean inBounds(int x, int y) {
-		return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
-	}
 
 	/*
 	 * @implNote O(9)
@@ -418,7 +355,7 @@ public class NostroPlayer implements MNKPlayer {
 			for (int dj = -range; dj <= range; dj++) {
 				if (di == 0 && dj == 0) // case cell c
 					continue;
-				if (!inBounds(c.i + di, c.j + dj)) // case out of bound
+				if (!evaluator.inBounds(c.i + di, c.j + dj)) // case out of bound
 					continue;
 				if ((Math.abs(di) == 2 && Math.abs(dj) == 1) || (Math.abs(dj) == 2 && Math.abs(di) == 1)) // case cell not aligned
 					continue;

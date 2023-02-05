@@ -139,7 +139,7 @@ public class Evaluator {
      * @return true if is in the bound, false if else.
      * @implNote cost: O(1).
      */
-    private boolean inBounds(int x, int y) {
+    public boolean inBounds(int x, int y) {
         return ((0 <= x) && (x < M) && (0 <= y) && (y < N));
     }
 
