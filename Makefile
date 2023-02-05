@@ -3,14 +3,14 @@ JR = java
 
 MNKGAME =  mnkgame
 PLAYER = player
-TESTER = boneless
+TESTER = player
 CLASS = classes
 LIB = lib
 
 MAIN_CLASS = $(MNKGAME).MNKGame
 TESTER_CLASS = $(MNKGAME).MNKPlayerTester
-PLAYER_CLASS = $(PLAYER).NostroPlayer
-OPPONENT_CLASS = $(TESTER).OurPlayer
+PLAYER_CLASS = $(PLAYER).NostroPlayer3
+OPPONENT_CLASS = $(TESTER).NostroPlayer
 
 ifeq ($(OS),Windows_NT)
 	detected_OS := Windows
@@ -48,9 +48,6 @@ test1moveV:
 
 test2moveV:
 	$(JR) $(RUNTIME_OPTIONS) $(TESTER_CLASS) $(MNK) $(OPPONENT_CLASS) $(PLAYER_CLASS) -v
-
-complete-test:
-	$(JR) $(RUNTIME_OPTIONS) player.Tester
 
 clean:
 	$(RM) $(CLASS)\$(PLAYER)
