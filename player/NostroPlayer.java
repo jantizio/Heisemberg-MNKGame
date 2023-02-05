@@ -23,7 +23,7 @@ public class NostroPlayer implements MNKPlayer {
 
 	private Evaluator evaluator;
 
-	private int gameStateCounter, numMosse; // debug variables
+	private int gameStateCounter, numMosse, gameStateEvalued, gameStateSkipped; // debug variables
 
 	/**
 	 * Default empty constructor
@@ -46,6 +46,44 @@ public class NostroPlayer implements MNKPlayer {
 		// debug variables
 		gameStateCounter = 0;
 		numMosse = 0;
+		gameStateEvalued = 0;
+		gameStateSkipped = 0;
+
+		// B.markCell(9, 9);
+		// B.markCell(8, 8);
+		// B.markCell(9, 5);
+		// B.markCell(7, 7);
+		// B.markCell(4, 7);
+
+		// for (int i = 0; i < M; i++) {
+		// for (int j = 0; j < N; j++) {
+		// switch (B.cellState(i, j)) {
+		// case P1:
+		// System.out.print("X ");
+		// break;
+		// case P2:
+		// System.out.print("O ");
+		// break;
+		// case FREE:
+		// if (asAdjacent(B, new MNKCell(i, j)))
+		// System.out.print("# ");
+		// else
+		// System.out.print("@ ");
+		// break;
+
+		// default:
+		// break;
+		// }
+		// }
+		// System.out.println();
+		// }
+
+		// B.unmarkCell();
+		// B.unmarkCell();
+		// B.unmarkCell();
+		// B.unmarkCell();
+		// B.unmarkCell();
+
 	}
 
 	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
@@ -64,6 +102,27 @@ public class NostroPlayer implements MNKPlayer {
 		// If there is just one possible move, return immediately
 		if (FC.length == 1)
 			return FC[0];
+
+
+		int x = 0, y = 0, max = -1;
+		if (FC.length == M * N) {
+			// for (int i = 0; i < M; i++) {
+			// for (int j = 0; j < N; j++) {
+			// if (positionWeights[i][j] > max) {
+			// max = positionWeights[i][j];
+			// x = i;
+			// y = j;
+			// }
+			// }
+			// }
+
+			// B.markCell(x, y);
+			B.markCell((M - 1) / 2, (N - 1) / 2);
+			return B.getMarkedCells()[0]; // zero perchè siamo alla prima mossa
+
+		}
+
+
 		/*
 		TODO: capire perchè una cella già marcata risulta free
 		
@@ -75,19 +134,22 @@ public class NostroPlayer implements MNKPlayer {
 		*/
 		evaluator.rebaseStore();
 		
+
 		bestMove = globalBestMove = FC[rand.nextInt(FC.length)]; // select random move
 		// iterative deepening search
 		for (int depth = 0;; depth++) {
 			currentDepth = INITIAL_DEPTH + depth;
-			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+
+			int searchResult = alphabeta(B, currentDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, true, true);
 			evaluator.resetStore();
+
 			// if the time is over stop the loop and the best move is the previous one
 			if (timedOut)
 				break;
 
 			globalBestMove = bestMove; // update the best move
-			// System.out.println("Completed search with depth " + currentDepth + ". Best
-			// move so far: " + globalBestMove);
+			// System.out.println("Completed search with depth " + currentDepth + ". Best move so far: " + globalBestMove);
+
 			// if the tree is completed the search is over for this move
 			// if the score is higher than the value of the win,
 			// i found a winning move i can stop the search
@@ -97,6 +159,8 @@ public class NostroPlayer implements MNKPlayer {
 									// need to set to true for the next loop
 		}
 
+
+		// debugMessage(timedOut);
 		// System.out.println();
 		B.markCell(globalBestMove.i, globalBestMove.j);
 		evaluator.calculateIncidence(B, globalBestMove.i, globalBestMove.j);
@@ -235,7 +299,7 @@ public class NostroPlayer implements MNKPlayer {
     }
 
 	public String playerName() {
-		return "TicTacToe PRO"; // TODO: scegliere un nome
+		return "cutoff optimize"; // TODO: scegliere un nome
 	}
 
 	/**
@@ -248,7 +312,7 @@ public class NostroPlayer implements MNKPlayer {
 	 * @param isMaximazing whether the current player is the min or max player
 	 * @return the score of the given board
 	 */
-	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing) {
+	private int alphabeta(MNKBoard b, int depth, int alpha, int beta, boolean isMaximazing, boolean firstMove) {
 		gameStateCounter += 1;
 		MNKGameState result = b.gameState();
 		MNKCell FC[] = b.getFreeCells();
@@ -264,16 +328,29 @@ public class NostroPlayer implements MNKPlayer {
 		if (isMaximazing) {
 			bestScore = Integer.MIN_VALUE;
 			for (MNKCell c : FC) {
+				gameStateSkipped += 1;
+				if (!asAdjacent(b, c) && !firstMove)
+					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (98.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
+				gameStateEvalued += 1;
 
 				b.markCell(c.i, c.j);
 				evaluator.calculateIncidence(b, c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, false);
+        
+				int score = alphabeta(b, depth - 1, alpha, beta, false, false);
+        
 				b.unmarkCell();
 				evaluator.undoIncidence();
+
+				// if (depth == currentDepth) {
+				// System.out.println(c + " " + score);
+				// }
+				// if(depth == currentDepth-1){
+				// 	System.out.println("\t"+c+" "+ score);
+				// }
 
 				if (score > bestScore) {
 					bestScore = score;
@@ -288,20 +365,35 @@ public class NostroPlayer implements MNKPlayer {
 		} else {
 			bestScore = Integer.MAX_VALUE;
 			for (MNKCell c : FC) {
+				gameStateSkipped += 1;
+				if (!asAdjacent(b, c) && !firstMove)
+					continue;
 				if ((System.currentTimeMillis() - timerStart) / 1000.0 > TIMEOUT * (99.0 / 100.0)) {
 					timedOut = true;
 					return bestScore;
 				}
+				gameStateEvalued += 1;
+
 				b.markCell(c.i, c.j);
-				evaluator.calculateIncidence(b, c.i, c.j);
-				int score = alphabeta(b, depth - 1, alpha, beta, true);
+   			evaluator.calculateIncidence(b, c.i, c.j);
+        
+				int score = alphabeta(b, depth - 1, alpha, beta, true, false);
+
 				b.unmarkCell();
 				evaluator.undoIncidence();
+
+				// if (depth == currentDepth) {
+				// System.out.println(c + " " + score);
+				// }
+				// if(depth == currentDepth-1){
+				// 	System.out.println("\t"+c+" "+ score);
+				// }
 
 				if (score < bestScore) {
 					bestScore = score;
 					if (depth == currentDepth)
 						bestMove = c;
+
 				}
 				beta = Math.min(beta, bestScore);
 				if (beta <= alpha)
@@ -312,7 +404,17 @@ public class NostroPlayer implements MNKPlayer {
 
 	}
 
-	private void printBoard(MNKBoard b) {
+	/**
+	 * is in the bounds on the board, cost: O(1).
+	 * 
+	 * @param x pos x.
+	 * @param y pos y.
+	 * @return true if is in the bound, false if else.
+	 */
+	private boolean inBounds(int x, int y) {
+		return ((0 <= x) && (x < M) && (0 <= y) && (y < N)) ? true : false;
+	}
+
 		for (int i = 0; i < M; i++) {
 			for (int j = 0; j < N; j++) {
 				switch (b.cellState(i, j)) {
@@ -334,11 +436,32 @@ public class NostroPlayer implements MNKPlayer {
 		System.out.println();
 	}
 
-
 	private void debugMessage(boolean timeout) {
 		if (timeout)
 			System.out.print("time ended, ");
 		System.out.println(
-				"(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateCounter);
+				"(" + playerName() + ")Stati di gioco valutati alla mossa " + numMosse + ": " + gameStateEvalued
+						+ " su " + gameStateSkipped);
 	}
+
+	/*
+	 * @implNote O(9)
+	 */
+	private boolean asAdjacent(MNKBoard b, MNKCell c) {
+		int range = 2;
+		for (int di = -range; di <= range; di++) {
+			for (int dj = -range; dj <= range; dj++) {
+				if (di == 0 && dj == 0) // case cell c
+					continue;
+				if (!inBounds(c.i + di, c.j + dj)) // case out of bound
+					continue;
+				if ((Math.abs(di) == 2 && Math.abs(dj) == 1) || (Math.abs(dj) == 2 && Math.abs(di) == 1)) // case cell not aligned
+					continue;
+				if (b.cellState(c.i + di, c.j + dj) != MNKCellState.FREE) // case cell is adjacent
+					return true;
+			}
+		}
+		return false; // case cell isn't adjacent
+	}
+
 }
