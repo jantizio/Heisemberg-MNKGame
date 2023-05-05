@@ -1,50 +1,80 @@
-# MNKGame
-Implementazione del progetto di Algoritmi e Strutture dati 2021/2022
+# Heisenberg - MNKGame player
 
+## Breve descrizione del progetto
 
-# Istruzioni per l'esecuzione
+Ci sono 3 versioni del giocatore Heisemberg:
 
-- Command-line compile.  In the mnkgame/ directory run::
+- `player/NostroPlayer.java`: metodo del "cutoff"
+- `player/NostroPlayer2.java`: realizzato tramite sorting
+- `player/NostroPlayer3.java`: fusione dei due player precedenti e giocatore "migliore"
 
-		javac -cp ".." *.java
+È spiegato tutto più nel dettaglio nella relazione `Relazione_MNKGame.pdf`
 
+Nella cartella player ci sono altri giocatori che sono l'evoluzione del nostro progetto, sono stati eliminati nel branch consegna.
 
-MNKGame application:
+## Istruzioni per la compilazione
 
-- Human vs Computer.  In the mnkgame/ directory run:
-	
-		java -cp ".." mnkgame.MNKGame 3 3 3 mnkgame.RandomPlayer
+Per compilare tutto il progetto
 
+```
+$ make full-build
+```
 
-- Computer vs Computer. In the mnkgame/ directory run:
+Per compilare solo la cartella `player`
 
-		java -cp ".." mnkgame.MNKGame 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer
+```
+$ make build
+```
 
+Variabili del Makefile che sono importanti.
 
-MNKPlayerTester application:
+- `PLAYER_CLASS`: player da testare
+- `OPPONENT_CLASS`: player avversario
+- `MNK`: dimensione della board, default è "3 3 3"
+- `rep`: numero di partite, defaul è 10
 
-- Output score only:
+sono sempre modificabili così:
 
-	java -cp ".." mnkgame.MNKPlayerTester 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer
+```
+$ make vshuma MNK="4 4 3" PLAYER_CLASS="dummyPlayer.java"
+```
 
-- Verbose output
+Per giocare umano contro player nella board 3x3x3
 
-	java -cp ".." mnkgame.MNKPlayerTester 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer -v
+```
+$ make vshuman MNK="4 4 3"
+```
 
+Per far giocare 2 player e `PLAYER_CLASS` gioca per primo
 
-- Verbose output and customized timeout (1 sec) and number of game repetitions (10 rounds)
+- non verbose:
 
+```
+$ make test1move MNK="4 4 3" rep="5"
+```
 
-	java -cp ".." mnkgame.MNKPlayerTester 5 5 4 mnkgame.RandomPlayer mnkgame.QuasiRandomPlayer -v -t 1 -r 10
-	
-# Cosa fare
-- Saad: iterative deepening e evaluate
-- Pische: alphabetapruning e sort moves
+- verbose
 
-Entro **Martedì 2**
+```
+$ make test1moveV MNK="4 4 3" rep="5"
+```
 
-# Configurazioni su cui fare i test
-![Configurazioni da testare](game_configuration.jpg)
+Per far giocare 2 player e `PLAYER_CLASS` gioca per secondo
 
+- non verbose:
 
+```
+$ make test2move MNK="4 4 3" rep="5"
+```
 
+- verbose
+
+```
+$ make test2moveV MNK="4 4 3" rep="5"
+```
+
+Per testare in tutte le configurazione, il codice è nel file `player/Tester.java`
+
+```
+$ make complete-test
+```
